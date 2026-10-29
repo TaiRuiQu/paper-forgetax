@@ -5,7 +5,7 @@
 - **前端**：零构建步骤的原生 ES Modules + Canvas FX + WebAudio 合成音效。
 - **后端**：Node.js 原生 HTTP 服务 + `node:sqlite`，无第三方运行时依赖。
 - **存档**：多用户、密码 scrypt 哈希、HMAC 签名令牌、三个云端契约槽位、图鉴/成就跨槽共享。
-- **美术**：全部由仓库内 Node 脚本程序化生成 SVG 像素画；不包含原作素材。
+- **美术**：剑阶/遗物/UI 使用仓库 SVG 像素素材；连续工坊背景和透明铁砧由内置 imagegen 生成后按低分辨率导出。不包含原作素材。提示词与来源记录见 `docs/audit/`。
 
 ## 快速开始
 
@@ -117,10 +117,10 @@ tests/                    引擎、内容、API 集成测试
 ```bash
 npm test
 # 等价于
-node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/api.test.js
+node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js
 ```
 
-当前 **63 项测试全部通过**，覆盖：
+当前 **71 项测试全部通过**，覆盖：
 
 - 剑值曲线（+0 320 G → +20 1,064,082 G）、大成功 +8→+10 的 20,503 G 示例；
 - 等级破碎曲线、1,000 格归一、相对减碎的乘算语义；
@@ -128,6 +128,7 @@ node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js
 - 贡额表、怒气、死亡、赦免、最后一天欠贡通关、王室零钱、成就；
 - 商店、刷新、满槽、商人库存/涨价/买空、消耗品限制、遗物继承/残骸；
 - 全部 94 件遗物 × 5 种结果的冒烟；
+- 锤击接触时呈现结果、打断时静默且只结算一次、减少动态和后台窗口行为；
 - 所有素材文件、19 成就、16 个解锁映射、8 个初始遗物、九剑系图标；
 - 完整 21 天逐日模拟通关、商店满槽换遗物、全部遗物 x 5 结果冒烟、剑架/贡台/溢出队列、收藏家钩子、继承与供给加成；
 - 注册/登录/令牌篡改、双用户隔离、存档元数据、档案单调合并、SQLite 重启后持久化。
@@ -141,6 +142,8 @@ npm run assets
 ```
 
 ## 规则口径与已知近似
+
+本次一致性结论与证据边界见 [2026-10-29 玩法审计](docs/audit/gameplay-audit-2026-10-29.md)。开局先展示简短背景叙事，首日教程按真实操作推进到次日；不会修改随机概率来保证足额。新增 100 个随机种子的首日存活验证，以及满容量移动失败的事务回归。
 
 本项目的首要参考是 `docs/reference/forgetax.md`。实现中保留了原文标注的版本差异：21 天、大成功 2.5 倍、+99 上限、+20 最终外观、第 21 天 232,000 G、次日三把基础剑、圣杯初始池、30%/40% 继承、25% 龙鳞钳、40% 凤凰代价等。
 

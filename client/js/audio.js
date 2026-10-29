@@ -4,6 +4,7 @@ export class AudioEngine {
     this.ctx = null;
     this.master = null;
     this.noiseBuffer = null;
+    this.impactNoiseBuffer = null;
     this.enabled = true;
     this.volume = 0.65;
     this.ambience = null;
@@ -28,6 +29,10 @@ export class AudioEngine {
       data[i] = last * 3.2;
     }
     this.noiseBuffer = buffer;
+    const impactBuffer = this.ctx.createBuffer(1, Math.ceil(this.ctx.sampleRate * .25), this.ctx.sampleRate);
+    const impactData = impactBuffer.getChannelData(0);
+    for (let i = 0; i < impactData.length; i++) impactData[i] = Math.random() * 2 - 1;
+    this.impactNoiseBuffer = impactBuffer;
   }
 
   ensure() {
@@ -63,11 +68,11 @@ export class AudioEngine {
     osc.stop(t0 + dur + 0.02);
   }
 
-  noise({ dur = 0.15, gain = 0.15, freq = 1200, q = 0.7, type = 'bandpass', delay = 0 }) {
+  noise({ dur = 0.15, gain = 0.15, freq = 1200, q = 0.7, type = 'bandpass', delay = 0, bright = false }) {
     if (!this.ctx || !this.noiseBuffer) return;
     const t0 = this.ctx.currentTime + delay;
     const src = this.ctx.createBufferSource();
-    src.buffer = this.noiseBuffer;
+    src.buffer = bright ? this.impactNoiseBuffer : this.noiseBuffer;
     const filter = this.ctx.createBiquadFilter();
     filter.type = type;
     filter.frequency.value = freq;
@@ -104,9 +109,17 @@ export class AudioEngine {
         this.tone({ freq: 98, dur: 0.2, type: 'square', gain: 0.04, delay: 0.06 });
         break;
       case 'hammer':
-        this.noise({ dur: 0.18, gain: 0.22, freq: 700, q: 0.8 });
-        this.tone({ freq: 86, dur: 0.22, type: 'sine', gain: 0.22, slideTo: 42 });
-        this.tone({ freq: 1600, dur: 0.06, type: 'triangle', gain: 0.05 });
+        // Steel attack, a deep body, then inharmonic anvil resonance.
+        this.noise({ dur: 0.045, gain: 0.25, freq: 1800, q: 0.5, bright: true });
+        this.noise({ dur: 0.14, gain: 0.11, freq: 460, q: 0.7, type: 'lowpass' });
+        this.tone({ freq: 112, dur: 0.25, type: 'sine', gain: 0.25, slideTo: 38, attack: 0.002 });
+        this.tone({ freq: 57, dur: 0.42, type: 'sine', gain: 0.10, slideTo: 31, attack: 0.003 });
+        [[318,.08,.65],[593,.05,.42],[1049,.025,.26],[1823,.015,.16]].forEach(([freq,gain,dur]) => {
+          this.tone({ freq, gain, dur, type: 'sine', attack: 0.001 });
+        });
+        break;
+      case 'hammer-windup':
+        this.noise({ dur: 0.15, gain: 0.025, freq: 900, q: 0.5, type: 'lowpass' });
         break;
       case 'success':
         this.tone({ freq: 523, dur: 0.12, type: 'square', gain: 0.06 });

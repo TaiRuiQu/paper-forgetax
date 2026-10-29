@@ -7,6 +7,8 @@ import {
   consumeDisabledReason, tutorialTarget,
 } from './helpers.js';
 
+import { tutorialObjective } from '/shared/engine/tutorial.js';
+
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
@@ -60,7 +62,7 @@ export function renderHUD(app) {
   const angerEl = $('#hud-anger');
   angerEl.innerHTML = [0, 1, 2].map(i => `<i class="${i < s.anger ? (s.anger >= 3 ? 'lit critical' : 'lit') : ''}"></i>`).join('');
   const dragon = $('#dragon-face img');
-  dragon.src = `/assets/scene/dragon_${s.anger >= 3 ? 'rage' : s.anger > 0 ? 'warn' : 'calm'}.svg`;
+  dragon.src = `/assets/ui/dragon_${s.anger >= 3 ? 'rage' : s.anger > 0 ? 'warn' : 'calm'}.svg`;
   renderSyncBadge(app);
 }
 
@@ -175,7 +177,8 @@ export function renderCenter(app) {
   $('#stage-empty').classList.toggle('hidden', !empty);
   const swordEl = $('#anvil-sword');
   swordEl.style.opacity = sw ? '1' : '0';
-  $('#hammer-art').style.opacity = sw ? '1' : '0';
+  const strikePhase = $('#forge-rig')?.dataset.strikePhase;
+  $('#hammer-art').style.opacity = sw || (strikePhase && strikePhase !== 'idle') ? '1' : '0';
   stage.classList.toggle('is-hot', Boolean(sw && (sw.heat || E.hasRelic(s, 'lifetime-contract'))));
   stage.classList.toggle('frenzy', s.frenzy.active);
   stage.classList.toggle('ready', Boolean(sw && sw.charge >= 10 && !s.frenzy.active));
@@ -616,40 +619,34 @@ export function renderMenu(app) {
 export function renderTutorial(app) {
   const layer = $('#tutorial-layer');
   if (!layer) return;
-  if (!app.state?.tutorial?.active || app.modal) {
+  const data = tutorialObjective(app.state);
+  $$('.guide-target').forEach(el => el.classList.remove('guide-target'));
+  $('#screen-game').classList.toggle('guide-on', Boolean(data && !app.modal));
+  if (!data || app.modal) {
     layer.classList.add('hidden');
     layer.innerHTML = '';
     return;
   }
+  if (app._tutorialKey !== data.key && window.innerWidth <= 800) {
+    app.mobileTab = data.tab;
+    applyMobileTab(app);
+  }
+  app._tutorialKey = data.key;
   layer.classList.remove('hidden');
-  const step = Math.min(app.tutorialStep || 0, TUTORIAL_STEPS.length - 1);
-  const data = TUTORIAL_STEPS[step];
-  const last = step === TUTORIAL_STEPS.length - 1;
+  const target = window.innerWidth <= 800
+    ? { place: '#inventory-grid', heat: '#mab-heat', hammer: '#mab-hammer', tribute: '#tribute-drop', bell: '#btn-bell', recover: '#btn-bell' }[data.key]
+    : { place: '#inventory-grid', heat: '#btn-heat', hammer: '#btn-hammer', tribute: '#tribute-drop', bell: '#btn-bell', recover: '#btn-bell' }[data.key];
+  if (target) $(target)?.classList.add('guide-target');
   layer.innerHTML = `
-    <div class="tutorial-focus" id="tutorial-focus" style="display:none"></div>
-    <div class="tutorial-card">
-      <div class="tutorial-step">GUIDE ${String(step + 1).padStart(2, '0')} / ${String(TUTORIAL_STEPS.length).padStart(2, '0')}</div>
-      <h4>${esc(data.title)}</h4>
+    <section class="tutorial-card" aria-label="首日实操引导">
+      <div class="tutorial-progress" aria-label="第 ${data.step + 1} 步，共 6 步">${['拿剑','加热','锻造','献贡','敲铃','次日'].map((name, i) => `<span class="${i < data.step ? 'done' : i === data.step ? 'current' : ''}">${name}</span>`).join('')}</div>
+      <h4 aria-live="polite">${esc(data.title)}</h4>
       <p>${esc(data.text)}</p>
       <div class="tutorial-actions">
         <button class="btn btn-ghost btn-small" data-action="tutorial-skip">跳过 (P)</button>
-        <button class="btn btn-primary btn-small" data-action="tutorial-next">${last ? '开始锤剑' : '下一步'}</button>
+        <button class="btn btn-primary btn-small" data-action="tutorial-do">${esc(data.label)}</button>
       </div>
-    </div>`;
-  const target = tutorialTarget(step);
-  if (target) {
-    const el = $(target);
-    if (el) {
-      const r = el.getBoundingClientRect();
-      const box = $('#tutorial-focus');
-      box.style.display = 'block';
-      box.style.position = 'fixed';
-      box.style.left = `${r.left - 3}px`;
-      box.style.top = `${r.top - 3}px`;
-      box.style.width = `${r.width + 6}px`;
-      box.style.height = `${r.height + 6}px`;
-    }
-  }
+    </section>`;
 }
 
 export function toast(app, title, message = '', kind = 'info', duration = 3800) {

@@ -145,7 +145,7 @@ export function createRun(options = {}) {
     brokenSwords: [],
     log: [],
     flags: { incenseUsed: false, pardonUsed: false },
-    tutorial: { active: !profile.tutorialDone },
+    tutorial: { active: !profile.tutorialDone, startDay: 1, introSeen: false },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -1198,24 +1198,18 @@ export function rewindHammer(state) {
 export function moveSwordTo(state, swordId, location) {
   const s = getSword(state, swordId);
   if (!s) return fail('no-sword', '找不到这把剑。');
+  if (!['rack', 'tribute', 'floor', 'anvil'].includes(location)) return fail('bad-location', '不能放到那里。');
+  if (s.location === location) return { ok: true };
+  if (location === 'anvil') return placeOnAnvil(state, swordId);
+  // Validate first: a rejected move must not detach a sword or consume its session.
+  if (location === 'rack' && rackSwords(state).length >= RACK_CAP) return fail('rack-full', '剑架只有三个位置。');
+  if (location === 'tribute' && tributeSwords(state).length >= TRIBUTE_CAP) return fail('tribute-full', '贡台已经放满了。');
+  if (location === 'floor' && inventorySwords(state).length >= FLOOR_CAP) return fail('floor-full', '地面已经堆满了，先腾出空间。');
   if (s.location === 'anvil') {
     leaveAnvilSession(state);
     state.anvilSwordId = null;
   }
-  if (location === 'rack') {
-    if (rackSwords(state).length >= RACK_CAP) return fail('rack-full', '剑架只有三个位置。');
-    s.location = 'rack';
-  } else if (location === 'tribute') {
-    if (tributeSwords(state).length >= TRIBUTE_CAP) return fail('tribute-full', '贡台已经放满了。');
-    s.location = 'tribute';
-  } else if (location === 'floor') {
-    if (inventorySwords(state).length >= FLOOR_CAP) return fail('floor-full', '地面已经堆满了，先腾出空间。');
-    s.location = 'floor';
-  } else if (location === 'anvil') {
-    return placeOnAnvil(state, swordId);
-  } else {
-    return fail('bad-location', '不能放到那里。');
-  }
+  s.location = location;
   return { ok: true };
 }
 

@@ -7,6 +7,7 @@
   <title>FORGE TAX · 2D 锻剑还债</title>
   <link rel="icon" href="/assets/ui/anvil.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/workshop.css">
 </head>
 <body>
   <div id="boot" class="boot-screen">
@@ -17,7 +18,7 @@
 
   <div id="app">
     <section id="screen-landing" class="screen hidden">
-      <div class="landing-bg"><img src="/assets/scene/select_bg.svg" alt=""></div>
+      <div class="landing-bg"><img src="/assets/scene/workshop-pixel.webp" alt=""></div>
       <div class="landing-vignette"></div>
       <div class="landing-wrap">
         <img class="landing-title" src="/assets/scene/title.svg" alt="FORGE TAX">
@@ -54,7 +55,7 @@
     </section>
 
     <section id="screen-menu" class="screen hidden">
-      <div class="menu-bg"><img src="/assets/scene/select_bg.svg" alt=""></div>
+      <div class="menu-bg"><img src="/assets/scene/workshop-pixel.webp" alt=""></div>
       <div class="landing-vignette"></div>
       <div class="menu-shell">
         <header class="menu-header">
@@ -101,7 +102,7 @@
       <div class="game-shell">
         <header id="hud" class="hud">
           <div class="hud-day">
-            <div class="dragon-face" id="dragon-face"><img src="/assets/scene/dragon_calm.svg" alt="巨龙"></div>
+            <div class="dragon-face" id="dragon-face"><img src="/assets/ui/dragon_calm.svg" alt="巨龙"></div>
             <div class="hud-day-text">
               <div class="hud-line"><span class="hud-kicker">契约</span><b id="hud-day">第 1 天</b><span id="hud-date" class="muted">4月15日</span></div>
               <div class="hud-line small"><span id="hud-phase">契约进行中</span><span class="dot-sep">·</span><button class="link-btn" data-action="open-calendar">查看日历</button></div>
@@ -180,12 +181,15 @@
                   <div class="frenzy-bar"><i id="frenzy-fill"></i></div>
                 </div>
               </div>
-              <div class="sword-glow" id="sword-glow"></div>
-              <div class="anvil-sword" id="anvil-sword">
-                <img id="anvil-sword-art" src="" alt="">
+              <div class="forge-rig" id="forge-rig" data-strike-phase="idle">
+                <div class="sword-glow" id="sword-glow"></div>
+                <div class="anvil-sword" id="anvil-sword">
+                  <img id="anvil-sword-art" src="" alt="">
+                </div>
+                <img class="anvil-art" src="/assets/scene/anvil-pixel.png" alt="铁砧">
+                <img class="hammer-art" id="hammer-art" src="/assets/ui/hammer-forge.svg" alt="锤子">
+                <span class="forge-flash" id="forge-flash" aria-hidden="true"></span>
               </div>
-              <img class="anvil-art" src="/assets/scene/anvil.svg" alt="铁砧">
-              <img class="hammer-art" id="hammer-art" src="/assets/scene/hammer.svg" alt="锤子">
               <div class="spark-layer" id="spark-layer"></div>
               <div class="stage-empty" id="stage-empty">
                 <div class="empty-glyph"><img src="/assets/ui/anvil.svg" alt=""></div>
@@ -219,9 +223,8 @@
 
               <div class="prob-panel panel-cut">
                 <div class="panel-title compact"><span>下一锤概率</span><span class="hint" id="prob-note">等级越高，破碎越危险</span></div>
-                <div class="prob-signs" id="prob-signs"></div>
+                <details class="odds-details"><summary>查看抽签详情</summary><div class="prob-signs" id="prob-signs"></div><div class="prob-foot" id="prob-foot"></div></details>
                 <div class="prob-bars" id="prob-bars"></div>
-                <div class="prob-foot" id="prob-foot"></div>
               </div>
             </div>
 
@@ -229,11 +232,12 @@
               <div class="consume-row" id="consume-row"></div>
               <div class="main-controls">
                 <div class="control-side">
+                  <button class="btn btn-ghost btn-small" data-action="open-kit">道具与回溯</button>
                   <button class="btn btn-ghost btn-small" data-action="take-anvil" id="btn-take" title="E">取走剑</button>
                   <button class="btn btn-ghost btn-small" data-action="rewind" id="btn-rewind" title="R">回溯</button>
                 </div>
                 <button class="btn btn-hammer" data-action="hammer" id="btn-hammer">
-                  <span class="hammer-icon"><img src="/assets/scene/hammer.svg" alt=""></span>
+                  <span class="hammer-icon"><img src="/assets/ui/hammer-forge.svg" alt=""></span>
                   <span class="hammer-label"><b>挥锤</b><small>SPACE</small></span>
                   <span class="cooldown-sweep" id="cooldown-sweep"></span>
                 </button>
@@ -246,7 +250,7 @@
             </div>
           </section>
 
-          <aside class="right-panel">
+          <aside class="right-panel" id="right-panel">
             <div class="right-tabs">
               <button class="right-tab active" data-action="tab-right" data-tab="shop"><img src="/assets/ui/swordcoin.svg" alt="">遗物商亭</button>
               <button class="right-tab" data-action="tab-right" data-tab="relics"><img src="/assets/ui/star.svg" alt="">持有遗物</button>

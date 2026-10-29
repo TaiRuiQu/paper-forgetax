@@ -7,3 +7,4 @@ server/data/secret.key
 .DS_Store
 test-results/
 tmp/
+.impeccable/review/

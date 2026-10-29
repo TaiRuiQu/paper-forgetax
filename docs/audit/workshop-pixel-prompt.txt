@@ -1,0 +1,10 @@
+Use case: stylized-concept
+Asset type: Production background plate for a 2D pixel-art dark fantasy sword-forging survival game, widescreen 16:9.
+Primary request: Create one continuous atmospheric blacksmith workshop interior, a side-on slightly elevated 2D adventure-game stage with tangible depth. A glowing furnace built into the far LEFT wall; a broad open working area in the CENTER with dark floor and no anvil; a sinister wooden relic vending cabinet and shelves at far RIGHT; an arched tribute hatch on rear-right wall, through it a huge watchful dragon eye barely visible in smoky darkness. Deep background iron rafters, hanging chains, soot-dark stone, rough timber, worn stone floor. Keep the central 60 percent spacious for a separately rendered interactive sword and anvil. Bottom edge foreground wooden workbench lip creates depth.
+Style/medium: beautifully authored detailed pixel art, deliberate chunky clusters, restrained dither and tactile irregular silhouettes, 1990s dark fantasy adventure quality, not vector, not smooth digital painting.
+Composition/framing: entire room, landscape 16:9, quiet shadowy center, glowing furnace at x=12 percent y=48 percent. Physical props integrated in one room, no frames, no UI panels.
+Lighting/mood: warm living amber fire at left, faint desaturated teal moonlight from a high opening, dramatic deep but readable charcoal shadows, ominous dragon presence, smoke catching light.
+Color palette: charcoal, soot brown, antique brass, warm ember orange with sparse cool teal.
+Constraints: original artwork, NO text, NO letters, NO logos, NO watermark, NO sword, NO anvil, NO people, no HUD or UI. Need a complete seamless scene, not a collage.
+
+Mode: built-in image_gen. Original raster preserved under CODEX_HOME/generated_images. Shipping export uses ffmpeg nearest-neighbor downscaling, then CSS image-rendering: pixelated.

@@ -1,0 +1,6 @@
+Use case: stylized-concept
+Asset type: Transparent foreground game prop for a 2D pixel art dark fantasy blacksmith game.
+Primary request: A single massive well-worn iron blacksmith anvil on a rough dark oak stump, front three-quarter view with its horn pointing LEFT, low camera showing the top working surface. Beautifully detailed deliberate chunky pixel art, warm orange furnace light from left, cold subtle teal rim light on right. Broad flat steel working face occupying upper third, battered steel edges, riveted dark base, iron hoop around stump, dark cuts and splinters. Entire object visible, centered with breathing room. A sword will be rendered separately across the top of the anvil.
+Constraints: GENUINE TRANSPARENT BACKGROUND, isolated cutout, no floor, no backdrop, no shadow plane, no people, no hands, no hammer, no sword, no text, no interface, no watermark. Clear strong silhouette with authored pixel clusters, not vector or smooth 3D. Landscape approximately 3:2 framing around the prop.
+
+Mode: built-in image_gen. Original raster preserved under CODEX_HOME/generated_images. Shipping export uses ffmpeg nearest-neighbor downscaling, then CSS image-rendering: pixelated.

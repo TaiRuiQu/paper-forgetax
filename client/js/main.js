@@ -1,8 +1,10 @@
 import * as Api from './api.js';
 import { AudioEngine } from './audio.js';
 import { FX } from './fx.js';
+import { swingForgeHammer, finishForgeStrike } from './forge.js';
 import * as UI from './ui.js';
 import * as Modals from './modals.js';
+import { tutorialObjective } from '/shared/engine/tutorial.js';
 import {
   E, TUTORIAL_STEPS, fmt, compact, esc, mergedCodex,
 } from './helpers.js';
@@ -66,13 +68,15 @@ function persistSettings() {
 function applySettings() {
   app.audio.setEnabled(app.settings.sound);
   app.audio.setVolume(app.settings.volume);
-  if (app.fx) app.fx.setReduced(app.settings.reduceMotion);
-  document.body.classList.toggle('reduce-motion', Boolean(app.settings.reduceMotion));
+  const reduced = app.settings.reduceMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (app.fx) app.fx.setReduced(reduced);
+  document.body.classList.toggle('reduce-motion', Boolean(reduced));
 }
 
 // ---------------------------------------------------------------- navigation
 function clearModalDom() {
   app.modal = null;
+  document.getElementById('app').inert = false;
   app._modalPaused = false;
   const root = document.getElementById('modal-root');
   if (root) root.innerHTML = '';
@@ -372,7 +376,8 @@ async function loadSlot(slot) {
     clearModalDom();
     showGame();
     if (state.phase === 'select') {
-      Modals.openStartRelic(app);
+      if (!state.tutorial.introSeen) Modals.openIntro(app);
+      else Modals.openStartRelic(app);
     } else if (state.phase === 'victory') {
       Modals.openVictory(app, state.lastDaySummary || {});
     } else if (state.phase === 'dead') {
@@ -397,7 +402,7 @@ async function startNewRun(slot) {
   app.profile.stats.runs = (app.profile.stats.runs || 0) + 1;
   if (app.profile.tutorialDone) app.state.tutorial.active = false;
   showGame();
-  Modals.openStartRelic(app);
+  Modals.openIntro(app);
   app.audio.play('day');
   await flushSave({ silent: true });
 }
@@ -460,7 +465,7 @@ async function abandonRun() {
 
 // ---------------------------------------------------------------- game actions
 function doHammer() {
-  if (!app.state || app.modal) return;
+  if (!app.state || app.modal || app._strikeInFlight) return;
   const reason = hammerDisabledReason(app);
   if (reason && reason !== '锤子回气中') { UI.toast(app, '现在不能挥锤', reason, 'error'); return; }
   const res = E.hammer(app.state, { now: Date.now() });
@@ -469,61 +474,59 @@ function doHammer() {
     return;
   }
   const r = app.state.lastHammer;
-  app.audio.play('hammer');
-  syncAchievements();
-  recordRunStats();
-  UI.renderAll(app);
-  UI.renderTutorial(app);
-  scheduleSave();
+  app._strikeInFlight = true;
+  if (app.settings.sound) app.audio.ensure();
   animateHammer(r);
 }
 
 function animateHammer(r) {
-  const hammer = document.getElementById('hammer-art');
-  if (hammer) {
-    hammer.classList.remove('swing');
-    void hammer.offsetWidth;
-    hammer.classList.add('swing');
-  }
-  app.fx?.shake('#anvil-stage');
-  setTimeout(() => {
-    const stage = document.getElementById('anvil-stage');
-    if (!stage) return;
-    const rect = stage.getBoundingClientRect();
-    const x = rect.left + rect.width * 0.5;
-    const y = rect.top + rect.height * 0.38;
-    let sound = r.result;
-    if (r.trueBreak) sound = 'break';
-    else if (r.protectedBy) sound = 'protect';
-    app.audio.play(sound);
-    if (r.frenzyStarted) app.audio.play('frenzy');
-    const colorMap = { break: '#e05a4f', damage: '#ff9a4c', hold: '#a89d8b', success: '#78c69c', great: '#ffdc92' };
-    app.fx?.burstAt('#anvil-stage', r.result, {
-      count: r.result === 'great' ? 52 : r.trueBreak ? 60 : 28,
-      y: 0.55,
-    });
-    if (r.trueBreak || r.result === 'damage') app.fx?.shake('#anvil-stage');
-    const delta = r.levelAfter - r.levelBefore;
-    const valueDelta = r.valueAfter - r.valueBefore;
-    if (!r.trueBreak) {
-      const bits = [];
-      if (delta) bits.push(`${delta > 0 ? '+' : ''}${delta}级`);
-      if (valueDelta) bits.push(`${valueDelta > 0 ? '+' : ''}${compact(valueDelta)} G`);
-      if (bits.length) app.fx?.floatText(x, y, bits.join(' · '), colorMap[r.result] || '#ffdc92', true);
-    } else {
-      app.fx?.floatText(x, y, '剑碎了', '#e05a4f', true);
-    }
-    showResultBanner(r);
-    if (r.frenzyStarted) {
-      UI.toast(app, '入神启动', `安全窗口 ${((E.frenzyDuration(app.state)) / 1000).toFixed(0)} 秒：期间不会破碎。`, 'success', 3600);
-      app.fx?.burstAt('#anvil-stage', 'great', { count: 40 });
-    }
-    if (r.trueBreak) {
-      UI.toast(app, '剑碎了', '如果还有悔恨发条，可以回溯这一锤。', 'error', 4200);
-    } else if (r.protectedBy) {
-      UI.toast(app, '碎剑被挡下', r.triggers.find(t => t.type === 'protect')?.text || '', 'success', 3800);
-    }
-  }, 150);
+  if (!app.fx?.reduced) app.audio.play('hammer-windup');
+  swingForgeHammer({
+    interval: E.hammerInterval(app.state, r.inFrenzy),
+    reduced: app.fx?.reduced,
+    onImpact: quiet => {
+      app._strikeInFlight = false;
+      syncAchievements();
+      recordRunStats();
+      UI.renderAll(app);
+      UI.renderTutorial(app);
+      scheduleSave();
+      if (quiet) return;
+      const stage = document.getElementById('anvil-stage');
+      if (!stage) return;
+      const rect = document.getElementById('forge-flash').getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      let sound = r.result;
+      if (r.trueBreak) sound = 'break';
+      else if (r.protectedBy) sound = 'protect';
+      app.audio.play('hammer');
+      app.audio.play(sound);
+      if (r.frenzyStarted) app.audio.play('frenzy');
+      const colorMap = { break: '#e05a4f', damage: '#ff9a4c', hold: '#a89d8b', success: '#78c69c', great: '#ffdc92' };
+      app.fx?.forgeImpact({ broken: r.trueBreak, great: r.result === 'great' });
+      const delta = r.levelAfter - r.levelBefore;
+      const valueDelta = r.valueAfter - r.valueBefore;
+      if (!r.trueBreak) {
+        const bits = [];
+        if (delta) bits.push(`${delta > 0 ? '+' : ''}${delta}级`);
+        if (valueDelta) bits.push(`${valueDelta > 0 ? '+' : ''}${compact(valueDelta)} G`);
+        if (bits.length) app.fx?.floatText(x, y, bits.join(' · '), colorMap[r.result] || '#ffdc92', true);
+      } else {
+        app.fx?.floatText(x, y, '剑碎了', '#e05a4f', true);
+      }
+      showResultBanner(r);
+      if (r.frenzyStarted) {
+        UI.toast(app, '入神启动', `安全窗口 ${((E.frenzyDuration(app.state)) / 1000).toFixed(0)} 秒：期间不会破碎。`, 'success', 3600);
+        app.fx?.burstAt('#anvil-stage', 'great', { count: 40 });
+      }
+      if (r.trueBreak) {
+        UI.toast(app, '剑碎了', '如果还有悔恨发条，可以回溯这一锤。', 'error', 4200);
+      } else if (r.protectedBy) {
+        UI.toast(app, '碎剑被挡下', r.triggers.find(t => t.type === 'protect')?.text || '', 'success', 3800);
+      }
+    },
+  });
 }
 
 function showResultBanner(r) {
@@ -552,6 +555,7 @@ function doHeat() {
 }
 
 function doTakeAnvil() {
+  if (!app.state || app._strikeInFlight) return;
   const sword = E.getAnvilSword(app.state);
   const res = E.takeAnvilSword(app.state, Date.now());
   if (failToast(res)) return;
@@ -762,7 +766,7 @@ function continueEndless() {
 }
 
 function tutorialMobileTab(step) {
-  return ['forge', 'inventory', 'forge', 'forge', 'tribute', 'shop', 'forge'][step] || 'forge';
+  return tutorialObjective(app.state)?.tab || 'forge';
 }
 
 function applyTutorialTab() {
@@ -779,7 +783,7 @@ function finishTutorial() {
   app.tutorialStep = 0;
   UI.renderTutorial(app);
   scheduleSave();
-  UI.toast(app, '教程结束', '接下来由你自己判断什么时候收手。', 'success');
+  UI.toast(app, app.state.day > (app.state.tutorial.startDay || 1) ? '第一堂课：活下来' : '已跳过引导', '可在设置中重新开启实操引导。', 'success');
 }
 
 function skipTutorial() {
@@ -934,6 +938,27 @@ async function handleAction(action, el) {
       doDiscardAndBuy(id, Number(el.dataset.index));
       break;
     case 'ring-bell': openRingConfirm(); break;
+    case 'intro-enter':
+      app.state.tutorial.introSeen = true;
+      Modals.closeModal(app);
+      Modals.openStartRelic(app);
+      scheduleSave();
+      break;
+    case 'tutorial-do': {
+      const objective = tutorialObjective(app.state);
+      if (!objective) break;
+      switch (objective.action) {
+        case 'claim': doClaimOverflow(); break;
+        case 'place': doPlaceOnAnvil(objective.swordId); break;
+        case 'heat': doHeat(); break;
+        case 'hammer': doHammer(); break;
+        case 'tribute': doMove(objective.swordId, 'tribute'); break;
+        case 'ring': openRingConfirm(); break;
+        case 'kit': Modals.openKit(app); break;
+        case 'finish': finishTutorial(); break;
+      }
+      break;
+    }
     case 'choose-start-relic': await chooseStartRelic(id); break;
     case 'close-day-summary':
       Modals.closeModal(app);
@@ -943,9 +968,7 @@ async function handleAction(action, el) {
       break;
     case 'continue-endless': continueEndless(); break;
     case 'tutorial-next': {
-      if (!app.state) break;
-      if (app.tutorialStep >= TUTORIAL_STEPS.length - 1) finishTutorial();
-      else { app.tutorialStep += 1; applyTutorialTab(); UI.renderTutorial(app); }
+      if (tutorialObjective(app.state)?.key === 'complete') finishTutorial();
       break;
     }
     case 'tutorial-skip': skipTutorial(); break;
@@ -962,6 +985,7 @@ async function handleAction(action, el) {
       if (!app.state) { UI.toast(app, '进入契约后才能重看教程', '', 'info'); break; }
       Modals.closeModal(app);
       app.state.tutorial.active = true;
+      app.state.tutorial.startDay = app.state.day;
       app.tutorialStep = 0;
       UI.renderTutorial(app);
       scheduleSave();
@@ -979,6 +1003,7 @@ function wireDragDrop() {
   if (right) right.dataset.drop = 'vending';
 
   document.addEventListener('dragstart', e => {
+    if (app._strikeInFlight) { e.preventDefault(); return; }
     const el = e.target.closest('[data-sword-id]');
     if (!el) return;
     e.dataTransfer.setData('text/plain', el.dataset.swordId);
@@ -1005,6 +1030,7 @@ function wireDragDrop() {
     if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
   });
   document.addEventListener('drop', e => {
+    if (app._strikeInFlight) { e.preventDefault(); return; }
     const zone = e.target.closest('[data-drop]');
     if (!zone) return;
     e.preventDefault();
@@ -1069,11 +1095,13 @@ function wireTooltips() {
 
 // ---------------------------------------------------------------- events
 function wireEvents() {
+  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applySettings);
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-action]');
     if (!el || el.disabled) return;
     if (e.target.closest('input, textarea, select')) return;
     const action = el.dataset.action;
+    if (app._strikeInFlight) return;
     app.audio.play('click');
     handleAction(action, el).catch(err => {
       console.error(err);
@@ -1089,6 +1117,10 @@ function wireEvents() {
   });
   document.addEventListener('keydown', e => {
     if (e.target.matches('input, textarea, select') || e.target.isContentEditable) return;
+    if (app._strikeInFlight) {
+      if (e.code === 'Space') e.preventDefault();
+      return;
+    }
     if (e.key === 'Escape') {
       if (app.modal) {
         const t = app.modal.type;
@@ -1128,7 +1160,10 @@ function wireEvents() {
     }
   });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && app.state && app.activeSlot) flushSave({ silent: true });
+    if (document.hidden) {
+      finishForgeStrike(true);
+      if (app.state && app.activeSlot) flushSave({ silent: true });
+    }
   });
   wireDragDrop();
   wireTooltips();
@@ -1140,7 +1175,7 @@ function tickLoop() {
   const now = Date.now();
   if (now - lastTick < 120) return;
   lastTick = now;
-  if (!app.state || app.screen !== 'game' || app.modal) return;
+  if (!app.state || app.screen !== 'game' || app.modal || app._strikeInFlight) return;
   const wasFrenzy = app.state.frenzy.active;
   E.tick(app.state, now);
   if (wasFrenzy && !app.state.frenzy.active) {

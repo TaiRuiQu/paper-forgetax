@@ -717,10 +717,22 @@ const files = {
   'scene/title.svg': titleArt(),
   'scene/frenzy_overlay.svg': frenzyRing(),
 };
+// HUD/button artwork needs its own visible bounds; scene canvases include
+// positioning space used by the workshop and ending illustrations.
+files['ui/hammer-forge.svg'] = files['scene/hammer.svg'].replace(
+  'width="96" height="96" viewBox="0 0 96 96"',
+  'width="42" height="42" viewBox="4 6 42 42"',
+);
+for (const mood of ['calm', 'warn', 'rage']) {
+  files[`ui/dragon_${mood}.svg`] = files[`scene/dragon_${mood}.svg`].replace(
+    'width="380" height="220" viewBox="0 0 380 220"',
+    'width="184" height="144" viewBox="14 0 184 144"',
+  );
+}
 for (const [rel, content] of Object.entries(files)) {
   fs.writeFileSync(path.join(ROOT, 'client/assets', rel), content);
 }
 for (const [name, content] of Object.entries(icons)) {
   fs.writeFileSync(path.join(UI, `${name}.svg`), content);
 }
-console.log(`Generated ${Object.keys(files).length} scene files and ${Object.keys(icons).length} UI icons.`);
+console.log(`Generated ${Object.keys(files).length} scene/framed assets and ${Object.keys(icons).length} UI icons.`);

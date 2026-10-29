@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T01:51:32.181Z",
+  "title": "Design System: Forge Tax 2D",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Soot Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.0122 304.39)",
+          "oklch(26.43% 0.0122 304.39)",
+          "oklch(37.86% 0.0122 304.39)",
+          "oklch(49.29% 0.0122 304.39)",
+          "oklch(60.71% 0.0122 304.39)",
+          "oklch(72.14% 0.0122 304.39)",
+          "oklch(83.57% 0.0122 304.39)",
+          "oklch(95.00% 0.0122 304.39)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "tonalRamp": [
+          "oklch(15.00% 0.0154 304.21)",
+          "oklch(26.43% 0.0154 304.21)",
+          "oklch(37.86% 0.0154 304.21)",
+          "oklch(49.29% 0.0154 304.21)",
+          "oklch(60.71% 0.0154 304.21)",
+          "oklch(72.14% 0.0154 304.21)",
+          "oklch(83.57% 0.0154 304.21)",
+          "oklch(95.00% 0.0154 304.21)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "tonalRamp": [
+          "oklch(15.00% 0.0190 304.87)",
+          "oklch(26.43% 0.0190 304.87)",
+          "oklch(37.86% 0.0190 304.87)",
+          "oklch(49.29% 0.0190 304.87)",
+          "oklch(60.71% 0.0190 304.87)",
+          "oklch(72.14% 0.0190 304.87)",
+          "oklch(83.57% 0.0190 304.87)",
+          "oklch(95.00% 0.0190 304.87)"
+        ]
+      },
+      "panel-2": {
+        "role": "neutral",
+        "displayName": "Panel 2",
+        "tonalRamp": [
+          "oklch(15.00% 0.0249 307.13)",
+          "oklch(26.43% 0.0249 307.13)",
+          "oklch(37.86% 0.0249 307.13)",
+          "oklch(49.29% 0.0249 307.13)",
+          "oklch(60.71% 0.0249 307.13)",
+          "oklch(72.14% 0.0249 307.13)",
+          "oklch(83.57% 0.0249 307.13)",
+          "oklch(95.00% 0.0249 307.13)"
+        ]
+      },
+      "panel-3": {
+        "role": "neutral",
+        "displayName": "Panel 3",
+        "tonalRamp": [
+          "oklch(15.00% 0.0270 312.16)",
+          "oklch(26.43% 0.0270 312.16)",
+          "oklch(37.86% 0.0270 312.16)",
+          "oklch(49.29% 0.0270 312.16)",
+          "oklch(60.71% 0.0270 312.16)",
+          "oklch(72.14% 0.0270 312.16)",
+          "oklch(83.57% 0.0270 312.16)",
+          "oklch(95.00% 0.0270 312.16)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.0335 315.89)",
+          "oklch(26.43% 0.0335 315.89)",
+          "oklch(37.86% 0.0335 315.89)",
+          "oklch(49.29% 0.0335 315.89)",
+          "oklch(60.71% 0.0335 315.89)",
+          "oklch(72.14% 0.0335 315.89)",
+          "oklch(83.57% 0.0335 315.89)",
+          "oklch(95.00% 0.0335 315.89)"
+        ]
+      },
+      "line-soft": {
+        "role": "neutral",
+        "displayName": "Line Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0263 312.26)",
+          "oklch(26.43% 0.0263 312.26)",
+          "oklch(37.86% 0.0263 312.26)",
+          "oklch(49.29% 0.0263 312.26)",
+          "oklch(60.71% 0.0263 312.26)",
+          "oklch(72.14% 0.0263 312.26)",
+          "oklch(83.57% 0.0263 312.26)",
+          "oklch(95.00% 0.0263 312.26)"
+        ]
+      },
+      "line-warm": {
+        "role": "neutral",
+        "displayName": "Line Warm",
+        "tonalRamp": [
+          "oklch(15.00% 0.0409 61.81)",
+          "oklch(26.43% 0.0409 61.81)",
+          "oklch(37.86% 0.0409 61.81)",
+          "oklch(49.29% 0.0409 61.81)",
+          "oklch(60.71% 0.0409 61.81)",
+          "oklch(72.14% 0.0409 61.81)",
+          "oklch(83.57% 0.0409 61.81)",
+          "oklch(95.00% 0.0409 61.81)"
+        ]
+      },
+      "gold": {
+        "role": "primary",
+        "displayName": "Antique Brass",
+        "tonalRamp": [
+          "oklch(15.00% 0.1231 79.15)",
+          "oklch(26.43% 0.1231 79.15)",
+          "oklch(37.86% 0.1231 79.15)",
+          "oklch(49.29% 0.1231 79.15)",
+          "oklch(60.71% 0.1231 79.15)",
+          "oklch(72.14% 0.1231 79.15)",
+          "oklch(83.57% 0.1231 79.15)",
+          "oklch(95.00% 0.1231 79.15)"
+        ]
+      },
+      "gold-bright": {
+        "role": "primary",
+        "displayName": "Bright Brass",
+        "tonalRamp": [
+          "oklch(15.00% 0.1001 85.19)",
+          "oklch(26.43% 0.1001 85.19)",
+          "oklch(37.86% 0.1001 85.19)",
+          "oklch(49.29% 0.1001 85.19)",
+          "oklch(60.71% 0.1001 85.19)",
+          "oklch(72.14% 0.1001 85.19)",
+          "oklch(83.57% 0.1001 85.19)",
+          "oklch(95.00% 0.1001 85.19)"
+        ]
+      },
+      "gold-dark": {
+        "role": "primary",
+        "displayName": "Dark Brass",
+        "tonalRamp": [
+          "oklch(15.00% 0.0984 66.63)",
+          "oklch(26.43% 0.0984 66.63)",
+          "oklch(37.86% 0.0984 66.63)",
+          "oklch(49.29% 0.0984 66.63)",
+          "oklch(60.71% 0.0984 66.63)",
+          "oklch(72.14% 0.0984 66.63)",
+          "oklch(83.57% 0.0984 66.63)",
+          "oklch(95.00% 0.0984 66.63)"
+        ]
+      },
+      "ember": {
+        "role": "secondary",
+        "displayName": "Living Ember",
+        "tonalRamp": [
+          "oklch(15.00% 0.1785 43.42)",
+          "oklch(26.43% 0.1785 43.42)",
+          "oklch(37.86% 0.1785 43.42)",
+          "oklch(49.29% 0.1785 43.42)",
+          "oklch(60.71% 0.1785 43.42)",
+          "oklch(72.14% 0.1785 43.42)",
+          "oklch(83.57% 0.1785 43.42)",
+          "oklch(95.00% 0.1785 43.42)"
+        ]
+      },
+      "ember-2": {
+        "role": "secondary",
+        "displayName": "Ember 2",
+        "tonalRamp": [
+          "oklch(15.00% 0.1390 57.28)",
+          "oklch(26.43% 0.1390 57.28)",
+          "oklch(37.86% 0.1390 57.28)",
+          "oklch(49.29% 0.1390 57.28)",
+          "oklch(60.71% 0.1390 57.28)",
+          "oklch(72.14% 0.1390 57.28)",
+          "oklch(83.57% 0.1390 57.28)",
+          "oklch(95.00% 0.1390 57.28)"
+        ]
+      },
+      "ember-deep": {
+        "role": "secondary",
+        "displayName": "Ember Deep",
+        "tonalRamp": [
+          "oklch(15.00% 0.1591 37.14)",
+          "oklch(26.43% 0.1591 37.14)",
+          "oklch(37.86% 0.1591 37.14)",
+          "oklch(49.29% 0.1591 37.14)",
+          "oklch(60.71% 0.1591 37.14)",
+          "oklch(72.14% 0.1591 37.14)",
+          "oklch(83.57% 0.1591 37.14)",
+          "oklch(95.00% 0.1591 37.14)"
+        ]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchment",
+        "tonalRamp": [
+          "oklch(15.00% 0.0418 83.87)",
+          "oklch(26.43% 0.0418 83.87)",
+          "oklch(37.86% 0.0418 83.87)",
+          "oklch(49.29% 0.0418 83.87)",
+          "oklch(60.71% 0.0418 83.87)",
+          "oklch(72.14% 0.0418 83.87)",
+          "oklch(83.57% 0.0418 83.87)",
+          "oklch(95.00% 0.0418 83.87)"
+        ]
+      },
+      "bone": {
+        "role": "neutral",
+        "displayName": "Bone",
+        "tonalRamp": [
+          "oklch(15.00% 0.0391 85.34)",
+          "oklch(26.43% 0.0391 85.34)",
+          "oklch(37.86% 0.0391 85.34)",
+          "oklch(49.29% 0.0391 85.34)",
+          "oklch(60.71% 0.0391 85.34)",
+          "oklch(72.14% 0.0391 85.34)",
+          "oklch(83.57% 0.0391 85.34)",
+          "oklch(95.00% 0.0391 85.34)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Ash Lettering",
+        "tonalRamp": [
+          "oklch(15.00% 0.0367 81.22)",
+          "oklch(26.43% 0.0367 81.22)",
+          "oklch(37.86% 0.0367 81.22)",
+          "oklch(49.29% 0.0367 81.22)",
+          "oklch(60.71% 0.0367 81.22)",
+          "oklch(72.14% 0.0367 81.22)",
+          "oklch(83.57% 0.0367 81.22)",
+          "oklch(95.00% 0.0367 81.22)"
+        ]
+      },
+      "muted-2": {
+        "role": "neutral",
+        "displayName": "Secondary Ash",
+        "tonalRamp": [
+          "oklch(15.00% 0.0358 77.46)",
+          "oklch(26.43% 0.0358 77.46)",
+          "oklch(37.86% 0.0358 77.46)",
+          "oklch(49.29% 0.0358 77.46)",
+          "oklch(60.71% 0.0358 77.46)",
+          "oklch(72.14% 0.0358 77.46)",
+          "oklch(83.57% 0.0358 77.46)",
+          "oklch(95.00% 0.0358 77.46)"
+        ]
+      },
+      "green": {
+        "role": "tertiary",
+        "displayName": "Green",
+        "tonalRamp": [
+          "oklch(15.00% 0.0989 159.33)",
+          "oklch(26.43% 0.0989 159.33)",
+          "oklch(37.86% 0.0989 159.33)",
+          "oklch(49.29% 0.0989 159.33)",
+          "oklch(60.71% 0.0989 159.33)",
+          "oklch(72.14% 0.0989 159.33)",
+          "oklch(83.57% 0.0989 159.33)",
+          "oklch(95.00% 0.0989 159.33)"
+        ]
+      },
+      "green-deep": {
+        "role": "tertiary",
+        "displayName": "Green Deep",
+        "tonalRamp": [
+          "oklch(15.00% 0.0798 161.87)",
+          "oklch(26.43% 0.0798 161.87)",
+          "oklch(37.86% 0.0798 161.87)",
+          "oklch(49.29% 0.0798 161.87)",
+          "oklch(60.71% 0.0798 161.87)",
+          "oklch(72.14% 0.0798 161.87)",
+          "oklch(83.57% 0.0798 161.87)",
+          "oklch(95.00% 0.0798 161.87)"
+        ]
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "Red",
+        "tonalRamp": [
+          "oklch(15.00% 0.1697 27.55)",
+          "oklch(26.43% 0.1697 27.55)",
+          "oklch(37.86% 0.1697 27.55)",
+          "oklch(49.29% 0.1697 27.55)",
+          "oklch(60.71% 0.1697 27.55)",
+          "oklch(72.14% 0.1697 27.55)",
+          "oklch(83.57% 0.1697 27.55)",
+          "oklch(95.00% 0.1697 27.55)"
+        ]
+      },
+      "red-deep": {
+        "role": "tertiary",
+        "displayName": "Red Deep",
+        "tonalRamp": [
+          "oklch(15.00% 0.1135 25.55)",
+          "oklch(26.43% 0.1135 25.55)",
+          "oklch(37.86% 0.1135 25.55)",
+          "oklch(49.29% 0.1135 25.55)",
+          "oklch(60.71% 0.1135 25.55)",
+          "oklch(72.14% 0.1135 25.55)",
+          "oklch(83.57% 0.1135 25.55)",
+          "oklch(95.00% 0.1135 25.55)"
+        ]
+      },
+      "blue": {
+        "role": "tertiary",
+        "displayName": "Blue",
+        "tonalRamp": [
+          "oklch(15.00% 0.0826 250.13)",
+          "oklch(26.43% 0.0826 250.13)",
+          "oklch(37.86% 0.0826 250.13)",
+          "oklch(49.29% 0.0826 250.13)",
+          "oklch(60.71% 0.0826 250.13)",
+          "oklch(72.14% 0.0826 250.13)",
+          "oklch(83.57% 0.0826 250.13)",
+          "oklch(95.00% 0.0826 250.13)"
+        ]
+      },
+      "purple": {
+        "role": "tertiary",
+        "displayName": "Purple",
+        "tonalRamp": [
+          "oklch(15.00% 0.0954 304.37)",
+          "oklch(26.43% 0.0954 304.37)",
+          "oklch(37.86% 0.0954 304.37)",
+          "oklch(49.29% 0.0954 304.37)",
+          "oklch(60.71% 0.0954 304.37)",
+          "oklch(72.14% 0.0954 304.37)",
+          "oklch(83.57% 0.0954 304.37)",
+          "oklch(95.00% 0.0954 304.37)"
+        ]
+      },
+      "steel": {
+        "role": "tertiary",
+        "displayName": "Steel",
+        "tonalRamp": [
+          "oklch(15.00% 0.0334 248.31)",
+          "oklch(26.43% 0.0334 248.31)",
+          "oklch(37.86% 0.0334 248.31)",
+          "oklch(49.29% 0.0334 248.31)",
+          "oklch(60.71% 0.0334 248.31)",
+          "oklch(72.14% 0.0334 248.31)",
+          "oklch(83.57% 0.0334 248.31)",
+          "oklch(95.00% 0.0334 248.31)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Pixel Display",
+        "purpose": "Latin game lettering; no global size is implied."
+      },
+      "headline": {
+        "displayName": "Introduction Headline",
+        "purpose": "Short full-room introduction."
+      },
+      "title": {
+        "displayName": "Sword Title",
+        "purpose": "Selected foreground sword identity."
+      },
+      "body": {
+        "displayName": "Chinese Pixel Body",
+        "purpose": "General text in the self-hosted Fusion Pixel stack."
+      },
+      "label": {
+        "displayName": "Compact Label",
+        "purpose": "Named resources and probabilities."
+      },
+      "number": {
+        "displayName": "Game Number",
+        "purpose": "Quantities and keyboard hints at component-specific sizes."
+      },
+      "button": {
+        "displayName": "Action Label",
+        "purpose": "Compact bold action lettering."
+      }
+    },
+    "shadows": [
+      {
+        "name": "foreground-grounding",
+        "value": "drop-shadow(0 18px 16px #0009)",
+        "purpose": "Transparent anvil grounding; CSS filter."
+      },
+      {
+        "name": "inventory-backing",
+        "value": "0 12px 24px #0008",
+        "purpose": "Foreground inventory readability."
+      },
+      {
+        "name": "tutorial-backing",
+        "value": "0 14px 32px #0007",
+        "purpose": "Contextual instruction readability."
+      },
+      {
+        "name": "hammer-control",
+        "value": "inset 0 2px 0 #ffe3a870, 0 8px 24px #0007",
+        "purpose": "Main hammer action."
+      }
+    ],
+    "motion": [
+      {
+        "name": "room-fire",
+        "value": "4s steps(5) infinite",
+        "purpose": "Local furnace-light opacity loop; disabled by OS preference and in-game setting."
+      },
+      {
+        "name": "guide-beacon",
+        "value": "1.6s steps(2) infinite",
+        "purpose": "Current objective outline; disabled by OS preference and in-game setting."
+      },
+      {
+        "name": "hammer-swing",
+        "value": "min(560ms, engineInterval * 0.9); contact 42%; hold until 50%",
+        "purpose": "Slow lift, fast strike, contact hold and heavy recovery; immediate presentation under OS or in-game Reduce Motion."
+      },
+      {
+        "name": "anvil-shake",
+        "value": "190ms normal / 230ms great or break, ease-out",
+        "purpose": "Contact-synchronized 6px local recoil with 160ms room shake; suppressed by OS or in-game Reduce Motion."
+      },
+      {
+        "name": "result-pop",
+        "value": ".9s ease both",
+        "purpose": "Result banner after a real forging action."
+      },
+      {
+        "name": "button-state",
+        "value": "transform .08s ease, filter .12s ease, border-color .12s ease",
+        "purpose": "Hover/press feedback."
+      },
+      {
+        "name": "in-game-reduce-motion",
+        "value": "animation-duration:.001ms; animation-iteration-count:1; transition-duration:.001ms; scroll-behavior:auto",
+        "purpose": "Setting also suppresses ambient particles and shake, and reduces event particles to roughly 30%; OS preference alone only stops room/guide loops."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "desktop-width-compression",
+        "value": "(min-width: 801px) and (max-width: 1150px)"
+      },
+      {
+        "name": "desktop-height-compression",
+        "value": "(min-width: 801px) and (max-height: 780px)"
+      },
+      {
+        "name": "inherited-mobile-outside-accepted-scope",
+        "value": "(max-width: 800px)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing primary button control; inset bevel retained, inherited outer block shadow excluded from extension guidance.",
+      "html": "<button class=\"ds-button-primary\">走进工坊</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:42px;background:linear-gradient(180deg,#e5ad4e,#a56d24 55%,#7c4d17);color:#201205;border:2px solid #f3cf85;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-weight:700;letter-spacing:.06em;line-height:1.2;white-space:nowrap;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.45);cursor:pointer;transition:transform .08s ease,filter .12s ease,border-color .12s ease}.ds-button-primary:hover:not(:disabled){filter:brightness(1.16);border-color:var(--gold-dark,#8c5a1e);transform:translateY(-1px)}.ds-button-primary:focus-visible{outline:2px solid var(--gold-bright,#ffdc92);outline-offset:4px}.ds-button-primary:active:not(:disabled){transform:translateY(2px)}.ds-button-primary:disabled{opacity:.38;cursor:not-allowed;filter:saturate(.4)}"
+    },
+    {
+      "name": "Ember Button",
+      "kind": "button",
+      "refersTo": "button-ember",
+      "description": "Existing ember button control; inset bevel retained, inherited outer block shadow excluded from extension guidance.",
+      "html": "<button class=\"ds-button-ember\">加热铁砧上的剑</button>",
+      "css": ".ds-button-ember{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:42px;background:linear-gradient(180deg,#a6401f,#6c2612 58%,#48180b);color:#ffe5cd;border:2px solid #d8743c;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-weight:700;letter-spacing:.06em;line-height:1.2;white-space:nowrap;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.45);cursor:pointer;transition:transform .08s ease,filter .12s ease,border-color .12s ease}.ds-button-ember:hover:not(:disabled){filter:brightness(1.16);border-color:var(--gold-dark,#8c5a1e);transform:translateY(-1px)}.ds-button-ember:focus-visible{outline:2px solid var(--gold-bright,#ffdc92);outline-offset:4px}.ds-button-ember:active:not(:disabled){transform:translateY(2px)}.ds-button-ember:disabled{opacity:.38;cursor:not-allowed;filter:saturate(.4)}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Existing ghost button control; inset bevel retained, inherited outer block shadow excluded from extension guidance.",
+      "html": "<button class=\"ds-button-ghost\">取走剑</button>",
+      "css": ".ds-button-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:42px;background:linear-gradient(180deg,#211a26,#151019);color:var(--bone,#d8cbb0);border:2px solid #3a2f3e;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-weight:700;letter-spacing:.06em;line-height:1.2;white-space:nowrap;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.45);cursor:pointer;transition:transform .08s ease,filter .12s ease,border-color .12s ease}.ds-button-ghost:hover:not(:disabled){filter:brightness(1.16);border-color:var(--gold-dark,#8c5a1e);transform:translateY(-1px)}.ds-button-ghost:focus-visible{outline:2px solid var(--gold-bright,#ffdc92);outline-offset:4px}.ds-button-ghost:active:not(:disabled){transform:translateY(2px)}.ds-button-ghost:disabled{opacity:.38;cursor:not-allowed;filter:saturate(.4)}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Existing danger button control; inset bevel retained, inherited outer block shadow excluded from extension guidance.",
+      "html": "<button class=\"ds-button-danger\">删除存档</button>",
+      "css": ".ds-button-danger{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;min-height:42px;background:linear-gradient(180deg,#7d2a27,#4a1817);color:#ffd7cf;border:2px solid #b6544c;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-weight:700;letter-spacing:.06em;line-height:1.2;white-space:nowrap;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.45);cursor:pointer;transition:transform .08s ease,filter .12s ease,border-color .12s ease}.ds-button-danger:hover:not(:disabled){filter:brightness(1.16);border-color:var(--gold-dark,#8c5a1e);transform:translateY(-1px)}.ds-button-danger:focus-visible{outline:2px solid var(--gold-bright,#ffdc92);outline-offset:4px}.ds-button-danger:active:not(:disabled){transform:translateY(2px)}.ds-button-danger:disabled{opacity:.38;cursor:not-allowed;filter:saturate(.4)}"
+    },
+    {
+      "name": "Hammer Action",
+      "kind": "button",
+      "refersTo": "button-hammer",
+      "description": "The desktop forge's dominant action, placed beneath sword state and probability readouts.",
+      "html": "<button class=\"ds-hammer\"><span><b>挥锤</b><small>SPACE</small></span></button>",
+      "css": ".ds-hammer{display:inline-flex;align-items:center;justify-content:center;width:200px;height:64px;padding:6px 18px;background:linear-gradient(180deg,#e3ac4f,#9b6323 55%,#623b12);color:#1a0f05;border:2px solid #f3d08a;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);box-shadow:inset 0 2px 0 #ffe3a870,0 8px 24px #0007;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-weight:700;cursor:pointer;transition:transform .08s ease,filter .12s ease}.ds-hammer span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}.ds-hammer b{font-size:21px;letter-spacing:.22em}.ds-hammer small{font-family:var(--font-num, 'Press Start 2P', 'Fusion Pixel', 'Consolas', monospace);font-size:7px;letter-spacing:.2em;opacity:.6;margin-top:3px}.ds-hammer:hover:not(:disabled){filter:brightness(1.16);transform:translateY(-1px)}.ds-hammer:focus-visible{outline:2px solid #ffdc92;outline-offset:4px}.ds-hammer:active:not(:disabled){transform:translateY(2px)}.ds-hammer:disabled{filter:grayscale(.6) brightness(.7);opacity:.38;cursor:not-allowed}"
+    },
+    {
+      "name": "Login Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Existing inset text field for account forms.",
+      "html": "<label class=\"ds-field\"><span>用户名</span><input type=\"text\" placeholder=\"输入用户名\"></label>",
+      "css": ".ds-field{display:block;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);color:var(--muted,#c2b49c)}.ds-field span{display:block;font-size:11px;letter-spacing:.16em;margin-bottom:5px}.ds-field input{width:100%;background:#0d0a11;border:2px solid var(--line,#3c3041);padding:10px 12px;color:var(--parchment,#ecddc0);font:inherit;caret-color:#ffdc92;outline:none;box-shadow:inset 2px 2px 0 rgba(0,0,0,.5)}.ds-field input:focus,.ds-field input:focus-visible{border-color:var(--gold-dark,#8c5a1e);box-shadow:inset 2px 2px 0 rgba(0,0,0,.5),0 0 0 2px rgba(232,180,90,.12)}.ds-field input::placeholder{color:#51473f}"
+    },
+    {
+      "name": "Relic Navigation",
+      "kind": "nav",
+      "refersTo": "navigation-tab",
+      "description": "Desktop shop and held-relic tabs; selected state uses translucent brass and a bottom seam.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"遗物\"><button class=\"ds-tab ds-tab-active\" aria-current=\"page\">遗物商亭</button><button class=\"ds-tab\">持有遗物</button></nav>",
+      "css": ".ds-tabs{display:flex;gap:6px}.ds-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 5px;border:0;background:none;color:var(--muted,#c2b49c);font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-size:12px;letter-spacing:.06em;cursor:pointer}.ds-tab-active{background:#6c481b70;color:var(--gold-bright,#ffdc92);border-bottom:1px solid #d8aa61}.ds-tab:focus-visible{outline:2px solid #ffdc92;outline-offset:4px}"
+    },
+    {
+      "name": "Hot State Chip",
+      "kind": "chip",
+      "refersTo": "chip-hot",
+      "description": "Compact named sword state; color supports its text.",
+      "html": "<span class=\"ds-chip-hot\">已加热</span>",
+      "css": ".ds-chip-hot{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;background:rgba(8,6,11,.72);border:1px solid #7a3d22;color:var(--ember-2,#ffa45c);font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);font-size:9px;letter-spacing:.03em}"
+    },
+    {
+      "name": "First-Day Guide",
+      "kind": "card",
+      "refersTo": "tutorial-card",
+      "description": "Contextual instruction follows real game state; this specimen is a static step, not a simulation.",
+      "html": "<section class=\"ds-guide\" aria-label=\"首日实操引导\"><div class=\"ds-guide-progress\"><span class=\"ds-guide-done\">拿剑</span><span class=\"ds-guide-current\">加热</span><span>锻造</span><span>献贡</span><span>敲铃</span><span>次日</span></div><h4>先让剑烧热</h4><p>点击炉火，为铁砧上的剑加热。</p></section>",
+      "css": ".ds-guide{width:min(320px,28vw);padding:16px 18px;border:0;border-top:2px solid #edb45e;background:#17150ff5;box-shadow:0 14px 32px #0007;font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif)}.ds-guide h4{font-size:20px;color:#ffdc92;margin:0}.ds-guide p{font-size:13px;color:#e1d3b9;line-height:1.65;margin:8px 0 0}.ds-guide-progress{display:flex;gap:4px;margin-bottom:10px}.ds-guide-progress span{flex:1;padding-bottom:5px;border-bottom:2px solid #49412f;color:#a4977e;font-size:11px;text-align:center}.ds-guide-progress .ds-guide-current{color:#ffdc92;border-color:#ffdc92}.ds-guide-progress .ds-guide-done{color:#a4ce9b;border-color:#65835d}@media(min-width:801px) and (max-height:780px){.ds-guide{padding:10px 14px}.ds-guide h4{font-size:17px}.ds-guide p{font-size:12px}}"
+    },
+    {
+      "name": "Probability Readout",
+      "kind": "custom",
+      "description": "Five named next-hammer outcomes with explicit percentages; displayed values are illustrative specimen data.",
+      "html": "<div class=\"ds-prob\"><div class=\"ds-prob-row\"><span>成功</span><span class=\"ds-prob-track\"><i></i></span><b>57.2%</b></div><details class=\"ds-prob-details\"><summary>查看抽签详情</summary><p>签数与修正以当前游戏状态为准。</p></details></div>",
+      "css": ".ds-prob{padding:8px 10px;background:#0f100cba;color:var(--muted,#c2b49c);font-family:var(--font-ui, 'Fusion Pixel', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif);text-shadow:0 2px 4px #000}.ds-prob-row{display:grid;grid-template-columns:38px 1fr 48px;gap:7px;align-items:center;font-size:11px}.ds-prob-track{height:6px;background:#0d0a10;border:1px solid #302531;overflow:hidden}.ds-prob-track i{display:block;height:100%;width:57.2%;background:linear-gradient(90deg,#2d614a,var(--green,#78c69c));transition:width .25s ease}.ds-prob-row b{font-family:var(--font-num, 'Press Start 2P', 'Fusion Pixel', 'Consolas', monospace);font-size:8px;font-weight:400;text-align:right;color:var(--bone,#d8cbb0)}.ds-prob-details{position:relative;font-size:11px}.ds-prob-details summary{cursor:pointer;padding:4px 0}.ds-prob-details[open]{background:#15120ef2}.ds-prob-details summary:focus-visible{outline:2px solid #ffdc92;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "像素工坊：场景即界面",
+    "overview": "The workshop is a continuous, fixed-camera 2D pixel-art room. Soot-dark stone, timber, iron, brass, and living furnace light establish the world. Crisp Chinese pixel lettering and compact numerical readouts let the player act inside it.\n\nThe room carries the spatial story; controls and information sit near the objects they affect. The generated background and transparent anvil share the stage with procedural sword art, authored SVG props, and result particles. Short introduction copy establishes the blacksmith's predicament, then the first day's tutorial follows actual play. This document records the current implementation; it does not establish full equivalence with the original game.",
+    "keyCharacteristics": [
+      "Continuous desktop room with a central foreground sword and anvil.",
+      "Charcoal and soot neutrals, ember heat, brass actions, and parchment text.",
+      "Crisp raster clusters, authored pixel geometry, and self-hosted pixel fonts.",
+      "Contextual instruction and outcome-driven forging feedback."
+    ],
+    "rules": [
+      {
+        "name": "The State Has a Name Rule",
+        "body": "Pair heat, risk, resource, and completion colors with labels or figures; color alone does not explain a game state.",
+        "section": "colors"
+      },
+      {
+        "name": "The Pixel Lettering Rule",
+        "body": "Use the supplied pixel families for the game's voice, and preserve the Chinese fallback stack. Do not replace them with a smooth display face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Scene Carries the Room Rule",
+        "body": "Let floor, wall, light, and props continue between controls. Add backing only where text or interaction needs it.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "**Do** keep the accepted desktop composition as one continuous 2D pixel-art room.",
+      "**Do** use generated scenery and transparent props alongside the procedural game assets, with nearest-neighbor rendering.",
+      "**Do** keep live state, quantities, probabilities, controls, and instruction in readable UI layers.",
+      "**Do** preserve visible resource names, keyboard focus, drag/drop affordances, and the actual first-day outcome.",
+      "**Do** describe the in-game and OS reduced-motion behaviors accurately."
+    ],
+    "donts": [
+      "**Don't** rebuild the workshop as three nonoverlapping webpage panels and a detached footer.",
+      "**Don't** bake labels or interactive state into scenery, or duplicate the foreground sword and anvil in the room plate.",
+      "**Don't** treat inherited mobile CSS as a newly approved product target.",
+      "**Don't** change game odds or claim complete original-game equivalence through visual documentation.",
+      "**Don't** canonize inherited eyebrow labels, hard offset shadows, decorative halos, or unverified contrast as rules for new surfaces."
+    ]
+  }
+}

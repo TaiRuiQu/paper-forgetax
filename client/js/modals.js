@@ -15,6 +15,7 @@ function showModal(app, type, payload = {}, options = {}) {
     app._modalPaused = true;
   }
   app.modal = { type, payload, options };
+  document.getElementById('app').inert = true;
   document.getElementById('tooltip')?.classList.add('hidden');
   document.body.classList.add('modal-open');
   renderModal(app);
@@ -27,6 +28,7 @@ function showModal(app, type, payload = {}, options = {}) {
 
 export function closeModal(app) {
   app.modal = null;
+  document.getElementById('app').inert = false;
   document.body.classList.remove('modal-open');
   const root = $('#modal-root');
   if (root) root.innerHTML = '';
@@ -73,6 +75,7 @@ function renderModal(app) {
 
 function build(app, type, payload, options) {
   switch (type) {
+    case 'intro': return buildIntro(app);
     case 'startRelic': return buildStartRelic(app, payload, options);
     case 'merchant': return buildMerchant(app, payload, options);
     case 'codex': return buildCodex(app, payload, options);
@@ -95,6 +98,26 @@ function build(app, type, payload, options) {
 }
 
 // ---------------------------------------------------------------- start relic
+export function openIntro(app) {
+  showModal(app, 'intro', {}, { closable: false });
+}
+
+function buildIntro() {
+  return {
+    title: '这间工坊，已经不属于你。',
+    closable: false,
+    size: 'intro-frame',
+    body: `<div class="intro-story">
+      <p>巨龙占据了山头，也接管了你的炉火。</p>
+      <p>你是留下来的铁匠。每天，三把新剑会送到门前。<br>你要加热、挥锤，把它们锻成足够值钱的贡品。</p>
+      <p>交不够，巨龙便记下一次警告。<br><strong>第三次，它会连你一起收走。</strong></p>
+      <p class="intro-contract">从 4 月 15 日，到 5 月 5 日。<br><b>撑过这 21 天，完成你的契约。</b></p>
+      <span class="intro-hint">炉火还亮着。今天，先活下来。</span>
+    </div>`,
+    footer: '<button class="btn btn-primary" data-action="intro-enter">点燃炉火，走进工坊</button>',
+  };
+}
+
 export function openStartRelic(app) {
   showModal(app, 'startRelic', {}, { closable: false });
 }

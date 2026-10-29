@@ -86,6 +86,38 @@ export class FX {
     setTimeout(() => el.classList.remove('shake'), 380);
   }
 
+  forgeImpact({ broken = false, great = false } = {}) {
+    const rig = document.getElementById('forge-rig');
+    const flash = document.getElementById('forge-flash');
+    if (!rig || !flash) return;
+    const r = flash.getBoundingClientRect();
+    const x = r.left + r.width / 2;
+    const y = r.top + r.height / 2;
+    // Hot steel flies sideways and falls; forge feedback is not result confetti.
+    const sparks = ['#fff0c3', '#ffd178', '#ff9d3e', '#e36b26'];
+    const count = great ? 22 : 14;
+    this.spawn(x, y, count, sparks, { direction: -2.65, speed: 8, size: 2.5, life: .45, gravity: .28, lift: .6 });
+    this.spawn(x, y, count, sparks, { direction: -.5, speed: 8, size: 2.5, life: .45, gravity: .28, lift: .6 });
+    this.spawn(x, y + 8, broken ? 20 : 8, ['#afa28a', '#716656', '#54493e'], { direction: -.1, speed: 3.6, size: 4, life: .55, gravity: .24 });
+    flash.getAnimations().forEach(a => a.cancel());
+    flash.animate([{ opacity: .95 }, { opacity: .35, offset: .3 }, { opacity: 0 }], { duration: this.reduced ? 70 : 115 });
+    if (this.reduced) return;
+    rig.getAnimations().forEach(a => a.cancel());
+    rig.animate([
+      { transform: 'translateX(-50%) translate(0,6px)' },
+      { transform: 'translateX(-50%) translate(-3px,-2px)', offset: .2 },
+      { transform: 'translateX(-50%) translate(2px,2px)', offset: .43 },
+      { transform: 'translateX(-50%) translate(-1px,0)', offset: .7 },
+      { transform: 'translateX(-50%)' },
+    ], { duration: great || broken ? 230 : 190, easing: 'ease-out' });
+    document.querySelector('.game-bg')?.animate([
+      { transform: 'translate(0,3px)' },
+      { transform: 'translate(-3px,-1px)', offset: .22 },
+      { transform: 'translate(2px,1px)', offset: .46 },
+      { transform: 'translate(0,0)' },
+    ], { duration: 160, easing: 'ease-out' });
+  }
+
   _loop(now) {
     const dt = Math.min(0.033, (now - this.last) / 1000);
     this.last = now;
@@ -94,8 +126,8 @@ export class FX {
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     if (this.ambient && !this.reduced && Math.random() < 0.14) {
-      const x = Math.random() * window.innerWidth;
-      const y = window.innerHeight * (0.55 + Math.random() * 0.4);
+      const x = window.innerWidth * (0.02 + Math.random() * 0.18);
+      const y = window.innerHeight * (0.4 + Math.random() * 0.24);
       this.particles.push({
         x, y, vx: (Math.random() - 0.5) * 0.3, vy: -0.25 - Math.random() * 0.5,
         life: 3 + Math.random() * 2, maxLife: 5, color: Math.random() < 0.25 ? '#ffdc92' : '#ff7a3c',
