@@ -139,7 +139,7 @@ test('root and stripped subpath serve the module graph, assets and API', async t
       const refs = type.includes('html')
         ? [...source.replace(/<base[^>]+>/, '').matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1])
         : type.includes('javascript')
-          ? [...source.matchAll(/(?:from\s+|import\s*)['"]([^'"]+)['"]/g)].map(m => m[1])
+          ? [...source.matchAll(/(?:\bfrom\s+|(?:^|\n)\s*import\s*)['"]([^'"]+)['"]/g)].map(m => m[1])
           : [...source.matchAll(/url\(['"]?([^'"\)]+)['"]?\)/g)].map(m => m[1]);
       for (const ref of refs) await visit(new URL(ref, documentBase).href);
     }

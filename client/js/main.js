@@ -1,4 +1,5 @@
 import * as Api from './api.js';
+import { serializeSaveFile, parseSaveFile, MAX_SAVE_FILE_BYTES } from '../shared/saveFile.js';
 import { AudioEngine } from './audio.js';
 import { FX } from './fx.js';
 import { swingForgeHammer, finishForgeStrike } from './forge.js';
@@ -260,6 +261,7 @@ function scheduleSave(delay = SAVE_DELAY) {
 }
 
 async function flushSave({ silent = false } = {}) {
+  if (importingSave) return false;
   clearTimeout(app.saveTimer);
   app.saveTimer = null;
   if (!app.state || !app.activeSlot || !Api.getToken()) return false;
@@ -453,6 +455,84 @@ async function logout() {
 }
 
 // ---------------------------------------------------------------- slot flows
+let importingSave = false;
+
+async function exportSlot(slot, button) {
+  button.disabled = true;
+  try {
+    let state;
+    if (app.state && app.activeSlot === slot && app.screen === 'game') {
+      syncProfile();
+      state = E.prepareSave(app.state);
+      if (app._clockPaused && state.frenzy?.active) state.frenzy.remainingMs = app._frenzyRemain ?? state.frenzy.remainingMs;
+    } else {
+      state = (await Api.getSave(slot)).state;
+    }
+    const blob = new Blob([serializeSaveFile(state, app.profile)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `forgetax-slot-${slot}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    UI.toast(app, '存档已导出', '备份包含此契约及图鉴、成就等长期进度。', 'success');
+  } catch (err) {
+    UI.toast(app, '导出失败', err.message, 'error');
+  } finally { button.disabled = false; }
+}
+
+function chooseSaveFile(slot) {
+  if (app.screen !== 'menu' || importingSave) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file || app.screen !== 'menu' || importingSave) return;
+    try {
+      if (file.size > MAX_SAVE_FILE_BYTES) throw new Error('文件超过 5 MB，请选择有效的存档文件。');
+      const backup = parseSaveFile(await file.text());
+      if (app.screen !== 'menu' || importingSave) return;
+      Modals.openConfirm(app, {
+        title: `恢复到存档槽 ${slot}？`,
+        danger: Boolean(app.saves.find(save => save.slot === slot && save.state)),
+        body: `<div class="relic-detail-desc">将恢复第 <b>${backup.state.day}</b> 天的契约。此槽位的原存档会被覆盖，建议先导出备份。<br><br>备份中的图鉴、成就和长期进度将合并到当前账号，已有解锁会保留。其他槽位不受影响。</div>`,
+        confirmLabel: '导入并恢复', kind: 'import-slot', slot, backup,
+      });
+    } catch (err) { UI.toast(app, '无法导入', err.message, 'error'); }
+  }, { once: true });
+  input.click();
+}
+
+async function importSlot({ slot, backup }) {
+  if (importingSave || app.screen !== 'menu') return;
+  importingSave = true;
+  const button = document.querySelector('[data-action="confirm-dialog"]');
+  if (button) { button.disabled = true; button.textContent = '正在恢复…'; }
+  try {
+    clearTimeout(app.saveTimer);
+    app.saveTimer = null;
+    if (app.savingPromise) await app.savingPromise;
+    const profile = E.mergeProfile(JSON.parse(JSON.stringify(app.profile)), backup.profile);
+    const result = await Api.putSave(slot, backup.state, profile);
+    app.profile = result.profile || profile;
+    if (app.activeSlot === slot) { app.state = null; app.activeSlot = null; }
+    // Update locally after the acknowledged write, even if refreshing later fails.
+    app.saves = app.saves.filter(save => save.slot !== slot);
+    app.saves.push({ slot, state: backup.state, meta: result.meta, updatedAt: result.updatedAt });
+    Modals.closeModal(app);
+    showMenu();
+    UI.toast(app, '存档已恢复', `已写入云端槽位 ${slot}，点击继续即可游玩。`, 'success');
+  } catch (err) {
+    UI.toast(app, '恢复失败', err.message || '请检查连接后重试。', 'error');
+  } finally {
+    importingSave = false;
+    if (button) { button.disabled = false; button.textContent = '导入并恢复'; }
+  }
+}
+
 async function loadSlot(slot) {
   try {
     let save = null;
@@ -901,6 +981,9 @@ function skipTutorial() {
 function confirmDialog() {
   const payload = app.modal?.payload || {};
   switch (payload.kind) {
+    case 'import-slot':
+      importSlot(payload);
+      break;
     case 'ring-bell':
       confirmRing();
       break;
@@ -938,6 +1021,7 @@ function confirmDialog() {
 
 // ---------------------------------------------------------------- action router
 async function handleAction(action, el) {
+  if (importingSave) return;
   const id = el.dataset.id;
   switch (action) {
     case 'open-howto': Modals.openHowTo(app); break;
@@ -955,6 +1039,8 @@ async function handleAction(action, el) {
     case 'open-merchant': if (app.state?.merchant) Modals.openMerchant(app); else UI.toast(app, '商人不在', '他在第 3、6、9、12、15、18、21 天到访。', 'info'); break;
     case 'buy-merchant': doBuyMerchant(Number(el.dataset.index)); break;
     case 'slot-load': enterGameFullscreen(); await loadSlot(Number(el.dataset.slot)); break;
+    case 'slot-export': await exportSlot(Number(el.dataset.slot), el); break;
+    case 'slot-import': chooseSaveFile(Number(el.dataset.slot)); break;
     case 'slot-new': {
       const slot = Number(el.dataset.slot);
       const existing = app.saves.find(s => s.slot === slot && s.state);

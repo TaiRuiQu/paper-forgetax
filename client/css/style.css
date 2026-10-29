@@ -251,8 +251,8 @@ h1, h2, h3, h4, p { margin: 0; }
 .slot-stat { background: rgba(9,7,12,.55); border: 1px solid var(--line-soft); padding: 6px 8px; }
 .slot-stat span { display: block; color: var(--muted-2); font-size: 9px; letter-spacing: .1em; }
 .slot-stat b { font-family: var(--font-num); font-size: 10px; color: var(--bone); }
-.slot-actions { margin-top: auto; display: flex; gap: 8px; }
-.slot-actions .btn { flex: 1; }
+.slot-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.slot-actions .btn { flex: 1 1 calc(50% - 8px); }
 .slot-empty {
   min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   border: 2px dashed #3a2f3e; background: rgba(12,9,16,.45); color: var(--muted);

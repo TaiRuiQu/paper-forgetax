@@ -609,6 +609,7 @@ function buildSettings(app) {
     ${canVibrate() ? `<div class="settings-row"><div><label>震动反馈</label><small>锤击、碎剑、入神与拖放时轻微震动</small></div><button class="switch ${s.haptics ? 'on' : ''}" data-action="toggle-setting" data-key="haptics" aria-label="震动反馈"></button></div>` : ''}
     ${isTouchDevice() && fullscreenSupported() ? `<div class="settings-row"><div><label>进入契约时全屏</label><small>手机上自动全屏并锁定横屏</small></div><button class="switch ${s.autoFullscreen ? 'on' : ''}" data-action="toggle-setting" data-key="autoFullscreen" aria-label="进入契约时全屏"></button></div>` : ''}
     <div class="settings-row"><div><label>重看教程</label><small>从第一步开始重新引导</small></div><button class="btn btn-ghost btn-small" data-action="replay-tutorial">重看</button></div>
+    ${app.state && app.activeSlot && app.screen === 'game' ? `<div class="settings-row"><div><label>备份当前契约</label><small>导出到本地；回到契约列表可导入恢复</small></div><button class="btn btn-ghost btn-small" data-action="slot-export" data-slot="${app.activeSlot}">导出存档</button></div>` : ''}
     <div class="settings-row"><div><label>账号</label><small>${app.user ? esc(app.user.username) : '未登录'}</small></div><button class="btn btn-ghost btn-small" data-action="logout">退出登录</button></div>
     <div class="modal-lore" style="font-size:9px;margin-top:8px">云端接口：${esc(app.apiBase || '')}</div>`,
     footer: `<button class="btn btn-ghost btn-small" data-action="close-modal">关闭</button>`,

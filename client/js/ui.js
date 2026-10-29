@@ -572,11 +572,12 @@ export function renderMenu(app) {
   for (let slot = 1; slot <= 3; slot++) {
     const save = saves.find(x => x.slot === slot);
     if (!save || !save.state) {
-      html += `<div class="slot-empty" data-action="slot-new" data-slot="${slot}">
+      html += `<div class="slot-empty">
         <div class="plus-mark">+</div>
         <strong>空契约位</strong>
         <span style="font-size:10px;color:var(--muted-2)">开始一份新的 21 天契约</span>
-        <span style="font-size:9px;color:var(--gold-dark);letter-spacing:.1em">签订新契约</span>
+        <button class="btn btn-primary btn-small" data-action="slot-new" data-slot="${slot}">签订新契约</button>
+        <button class="btn btn-ghost btn-small" data-action="slot-import" data-slot="${slot}">导入存档</button>
       </div>`;
       continue;
     }
@@ -610,6 +611,8 @@ export function renderMenu(app) {
       <div class="slot-actions">
         <button class="btn btn-primary btn-small" data-action="slot-load" data-slot="${slot}">${phase === 'select' ? '继续开局' : phase === 'dead' || phase === 'victory' ? '查看结局' : '继续铁匠'}</button>
         <button class="btn btn-ghost btn-small" data-action="slot-new" data-slot="${slot}">新契约</button>
+        <button class="btn btn-ghost btn-small" data-action="slot-export" data-slot="${slot}">导出存档</button>
+        <button class="btn btn-ghost btn-small" data-action="slot-import" data-slot="${slot}">导入存档</button>
       </div>
     </div>`;
   }
