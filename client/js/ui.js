@@ -445,18 +445,18 @@ function renderRelicRack(app) {
     <div style="margin-top:10px">${list || '<div class="empty-state" style="padding:16px">还没有遗物。</div>'}</div>`;
 }
 
-function renderTribute(app) {
+export function renderTribute(app) {
   const s = app.state;
   const quota = E.currentQuota(s);
   const swords = E.tributeSwords(s);
   const total = swords.reduce((sum, sw) => sum + E.swordValue(s, sw), 0);
   const drop = $('#tribute-drop');
   drop.classList.toggle('empty', swords.length === 0);
-  drop.innerHTML = swords.map(sw => `<div class="tribute-sword" ${tip(swordTip(app, sw))}>
+  drop.innerHTML = swords.map(sw => `<div class="tribute-sword${app.selectedSwordId === sw.id ? ' selected' : ''}" data-action="select-sword" data-id="${sw.id}" draggable="true" data-sword-id="${sw.id}" ${tip(swordTip(app, sw))}>
     <img src="${swordArtPath(sw)}" alt="">
     <div class="ts-name">${esc(E.swordDisplayName(sw))}</div>
     <span class="ts-value">+${sw.level} · ${compact(E.swordValue(s, sw))} G</span>
-    <button class="ts-remove" data-action="from-tribute" data-id="${sw.id}" title="取回">×</button>
+    <button class="ts-remove" data-action="from-tribute" data-id="${sw.id}" aria-label="取回${esc(E.swordDisplayName(sw))}" title="取回">取回</button>
   </div>`).join('');
   $('#tribute-quota').textContent = `${fmt(quota)} G`;
   $('#tribute-meta').textContent = `${swords.length} 把剑 · 合计 ${fmt(total)} G`;

@@ -132,7 +132,7 @@ input { caret-color: #ffdc92; }
 .shop-icon img { width: 44px; height: 44px; }
 .shop-name { font-size: 13px; }
 .shop-desc { font-size: 11px; }
-.tribute-bar { position: absolute; right: 22px; bottom: 18px; width: 260px; height: 245px; max-height: 40%; min-height: 210px; margin: 0; padding: 12px; display: grid; grid-template-columns: 1fr; grid-template-rows: auto minmax(50px,1fr) auto; gap: 7px; z-index: 7; background: linear-gradient(125deg,#18120ba6,#18120fee) !important; transform: rotate(1deg); }
+.tribute-bar { position: absolute; right: 22px; bottom: 18px; width: 260px; height: 245px; max-height: 40%; min-height: 245px; margin: 0; padding: 12px; display: grid; grid-template-columns: 1fr; grid-template-rows: auto minmax(80px,1fr) auto; gap: 7px; z-index: 7; background: linear-gradient(125deg,#18120ba6,#18120fee) !important; transform: rotate(1deg); }
 .tribute-head { flex-direction: row; justify-content: space-between; align-items: center; }
 .tribute-head .hint { display: none; }
 .tribute-quota { padding: 0; margin: 0; flex-direction: column; gap: 2px; }
@@ -200,7 +200,6 @@ input { caret-color: #ffdc92; }
   .tutorial-card { top: 80px; padding: 10px 14px; }
   .tutorial-card h4 { font-size: 17px; }
   .tutorial-card p { font-size: 12px; }
-  .tribute-bar { height: 210px; }
 }
 @media (max-width: 800px) {
   #screen-game { height: 100dvh; }

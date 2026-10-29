@@ -911,6 +911,7 @@ async function handleAction(action, el) {
       app.audio.play('click');
       UI.renderLeft(app);
       UI.renderCenter(app);
+      UI.renderTribute(app);
       break;
     case 'place-anvil': doPlaceOnAnvil(id); break;
     case 'to-rack': doMove(id, 'rack'); break;

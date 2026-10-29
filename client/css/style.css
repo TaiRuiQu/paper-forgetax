@@ -586,10 +586,12 @@ h1, h2, h3, h4, p { margin: 0; }
 .tribute-drop.empty::after { content: '把剑拖到这里，凑够今日贡额'; color: #4e424a; font-size: 10px; letter-spacing: .08em; width: 100%; text-align: center; }
 .tribute-sword { flex: 0 0 96px; position: relative; background: linear-gradient(180deg, #221a24, #130f17); border: 1px solid #493843; padding: 4px 5px 5px; cursor: grab; }
 .tribute-sword:hover { border-color: var(--gold-dark); }
+.tribute-sword.selected { box-shadow: inset 0 0 0 1px var(--gold); }
 .tribute-sword img { width: 100%; height: 44px; object-fit: contain; display: block; }
 .tribute-sword .ts-name { font-size: 8px; color: var(--bone); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tribute-sword .ts-value { font-family: var(--font-num); font-size: 6px; color: var(--gold); display: block; margin-top: 1px; }
-.tribute-sword .ts-remove { position: absolute; right: 1px; top: 1px; font-size: 8px; background: rgba(8,6,11,.8); color: var(--muted); border: 0; padding: 0 3px; }
+.tribute-sword .ts-remove { position: absolute; right: 1px; top: 1px; min-width: 32px; min-height: 24px; font-size: 11px; background: rgba(8,6,11,.8); color: var(--bone); border: 0; padding: 2px 4px; }
+.tribute-sword .ts-remove:hover { color: var(--gold-bright); background: var(--ink); }
 .tribute-action { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
 .tribute-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 9px; color: var(--muted); padding: 0 2px; }
 .tribute-total b { font-family: var(--font-num); font-size: 11px; color: var(--bone); }
