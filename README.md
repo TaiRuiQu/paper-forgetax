@@ -67,6 +67,8 @@ WEB_PORT=5173
 
 ### Caddy 子路径部署
 
+注册和登录共用 IP 限流：任意滚动 5 分钟内最多请求 10 次（成功、失败及参数错误均计数），超出返回 `429` 和 `Retry-After` 秒数。优先读取 `CF-Connecting-IP`，缺失或无效时读取 `X-Forwarded-For` 的第一个 IP，再缺失或无效则使用连接 IP。生产入口应由可信代理设置这些请求头，并禁止绕过代理直连。计数保存在 API 进程内存，重启后清空，多实例间不共享。
+
 页面、样式、动态素材与模块引用均使用相对路径，可部署在 `/` 或 `/forgetax/` 等目录下。目录访问需要末尾斜杠。Caddy 与游戏在同一台主机时，使用 [deploy/Caddyfile](deploy/Caddyfile)：
 
 ```caddyfile

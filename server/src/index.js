@@ -12,10 +12,12 @@ import {
 import { mergeProfile, emptyProfile } from '../../shared/engine/engine.js';
 import { dayInfo } from '../../shared/data/gameData.js';
 import { applySavePatch } from '../../shared/savePatch.js';
+import { clientIp, createAuthRateLimiter } from './rate-limit.js';
 
 const PORT = Number(process.env.PORT || 3001);
 const HOST = process.env.HOST || '127.0.0.1';
 const MAX_BODY = 6 * 1024 * 1024;
+const limitAuth = createAuthRateLimiter();
 
 function json(res, status, data) {
   const body = JSON.stringify(data);
@@ -114,6 +116,15 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname.replace(/\/+$/, '') || '/';
 
   try {
+    if (req.method === 'POST' && (pathname === '/api/register' || pathname === '/api/login')) {
+      const retryAfter = limitAuth(clientIp(req));
+      if (retryAfter) {
+        res.setHeader('Retry-After', String(retryAfter));
+        json(res, 429, { error: 'rate-limited', message: '注册或登录过于频繁，请稍后再试。', retryAfter });
+        return;
+      }
+    }
+
     if (pathname === '/api/health' && req.method === 'GET') {
       json(res, 200, { ok: true, name: 'forgetax-cloud', time: new Date().toISOString() });
       return;

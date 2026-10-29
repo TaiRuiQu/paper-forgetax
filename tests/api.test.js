@@ -43,10 +43,10 @@ function stop(server) {
   });
 }
 
-async function request(base, path, { method = 'GET', body, token } = {}) {
+async function request(base, path, { method = 'GET', body, token, headers = {} } = {}) {
   const res = await fetch(`${base}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   let data = null;
@@ -207,6 +207,47 @@ test('SQLite data survives an API restart', async () => {
   assert.equal(relogin.data.profile.codex.relics['lucky-coal'], true);
   const me = await request(server.base, '/me', { token });
   assert.equal(me.status, 200);
+});
+
+test('register and login share ten attempts per CF IP, including successes and malformed requests', async () => {
+  const headers = { 'CF-Connecting-IP': '203.0.113.10' };
+  const success = await request(server.base, '/login', {
+    method: 'POST', headers, body: { username: 'AliceSmith', password: 'forge123' },
+  });
+  assert.equal(success.status, 200);
+  for (let i = 0; i < 9; i++) {
+    const response = await request(server.base, i % 2 ? '/login' : '/register', {
+      method: 'POST', headers, body: {},
+    });
+    assert.equal(response.status, 400);
+  }
+  for (const route of ['/login', '/register/']) {
+    const blocked = await request(server.base, route, { method: 'POST', headers, body: {} });
+    assert.equal(blocked.status, 429);
+    assert.equal(blocked.data.error, 'rate-limited');
+    assert.ok(blocked.data.retryAfter > 0 && blocked.data.retryAfter <= 300);
+    assert.equal(blocked.headers.get('retry-after'), String(blocked.data.retryAfter));
+  }
+  assert.equal((await request(server.base, '/health', { headers })).status, 200);
+  assert.equal((await request(server.base, '/login', { method: 'OPTIONS', headers })).status, 204);
+  const burst = await Promise.all(Array.from({ length: 12 }, () => request(server.base, '/login', {
+    method: 'POST', headers: { 'cf-connecting-ip': '203.0.113.11' },
+    body: { username: 'NonexistentUser', password: 'wrong-password' },
+  })));
+  assert.equal(burst.filter(response => response.status === 401).length, 10);
+  assert.equal(burst.filter(response => response.status === 429).length, 2);
+  const malformed = await fetch(`${server.base}/login`, {
+    method: 'POST', headers: { 'CF-Connecting-IP': '203.0.113.12' }, body: '{broken',
+  });
+  assert.equal(malformed.status, 400);
+  for (let i = 0; i < 9; i++) {
+    assert.equal((await request(server.base, '/register', {
+      method: 'POST', headers: { 'CF-Connecting-IP': '203.0.113.12' }, body: {},
+    })).status, 400);
+  }
+  assert.equal((await request(server.base, '/login', {
+    method: 'POST', headers: { 'CF-Connecting-IP': '203.0.113.12' }, body: {},
+  })).status, 429);
 });
 
 test('incremental saves persist only changed fields and reject stale or invalid patches', async () => {
