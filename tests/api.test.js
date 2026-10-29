@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
+import { diffSave } from '../shared/savePatch.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.resolve(__dirname, '../server/src/index.js');
@@ -55,6 +57,13 @@ async function request(base, path, { method = 'GET', body, token } = {}) {
 let server;
 
 test.before(async () => {
+  const legacy = new DatabaseSync(path.join(DATA_DIR, 'forgetax.db'));
+  legacy.exec(`CREATE TABLE saves (
+    user_id INTEGER NOT NULL, slot INTEGER NOT NULL, state TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL,
+    PRIMARY KEY(user_id, slot)
+  ); INSERT INTO saves VALUES (999, 1, '{"gold":123}', '{}', 'legacy');`);
+  legacy.close();
   server = await startApi();
 });
 
@@ -68,6 +77,16 @@ test('health endpoint is public', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.data.ok, true);
   assert.match(r.headers.get('access-control-allow-origin'), /\*/);
+});
+
+test('existing saves acquire a revision without changing their state', () => {
+  const legacy = new DatabaseSync(path.join(DATA_DIR, 'forgetax.db'));
+  try {
+    const row = legacy.prepare('SELECT state, updated_at, revision FROM saves WHERE user_id = 999').get();
+    assert.equal(row.state, '{"gold":123}');
+    assert.equal(row.updated_at, 'legacy');
+    assert.ok(row.revision);
+  } finally { legacy.close(); }
 });
 
 test('auth, multi-user isolation, validation and token signing', async () => {
@@ -188,4 +207,112 @@ test('SQLite data survives an API restart', async () => {
   assert.equal(relogin.data.profile.codex.relics['lucky-coal'], true);
   const me = await request(server.base, '/me', { token });
   assert.equal(me.status, 200);
+});
+
+test('incremental saves persist only changed fields and reject stale or invalid patches', async () => {
+  const registered = await request(server.base, '/register', {
+    method: 'POST', body: { username: 'DeltaForge', password: 'forge123' },
+  });
+  const token = registered.data.token;
+  const initial = {
+    phase: 'playing', day: 2, gold: 10, removed: 'delete me', nullable: 'old',
+    swords: [{ id: 'a', level: 1, name: 'unchanged' }], relics: ['bent-nail'],
+    nested: { keep: true, 'dot.key': 1, '中文': 1 },
+    counters: Object.fromEntries(Array.from({ length: 70 }, (_, i) => [`key${i}`, 0])),
+  };
+  const full = await request(server.base, '/saves/1', { method: 'PUT', token, body: { state: initial } });
+  assert.equal(full.status, 200);
+  assert.ok(full.data.revision);
+  const updated = structuredClone(initial);
+  updated.gold = 20;
+  updated.nullable = null;
+  delete updated.removed;
+  updated.nested['dot.key'] = 2;
+  updated.nested['中文'] = 2;
+  updated.swords[0].level = 3;
+  for (const key of Object.keys(updated.counters)) updated.counters[key] = 1;
+  // Another slot/page can add shared discoveries while this save is in flight.
+  await request(server.base, '/profile', {
+    method: 'POST', token, body: { profile: { codex: { relics: { 'bent-nail': true } } } },
+  });
+  const body = {
+    baseRevision: full.data.revision, changes: diffSave(initial, updated),
+    profileChanges: [{ path: ['stats', 'bestDay'], value: 2 }],
+  };
+  const patched = await request(server.base, '/saves/1', { method: 'PATCH', token, body });
+  assert.equal(patched.status, 200);
+  assert.notEqual(patched.data.revision, full.data.revision);
+  assert.equal(patched.data.meta.gold, 20);
+  assert.equal(patched.data.profile.stats.bestDay, 2);
+  assert.equal(patched.data.profile.codex.relics['bent-nail'], true);
+  let read = await request(server.base, '/saves/1', { token });
+  assert.deepEqual(read.data.save.state, updated);
+  assert.equal(read.data.save.revision, patched.data.revision);
+  const stale = await request(server.base, '/saves/1', { method: 'PATCH', token, body });
+  assert.equal(stale.status, 409);
+  const missing = await request(server.base, '/saves/2', { method: 'PATCH', token, body });
+  assert.equal(missing.status, 409);
+
+  for (const changes of [
+    [{ path: ['__proto__', 'polluted'], value: true }],
+    [{ path: ['swords', 99], value: {} }],
+    [{ path: ['nested', 'missing', 'child'], value: 1 }],
+    [{ path: ['phase'], value: 'select' }],
+    [{ path: ['swords', 0], remove: true }],
+  ]) {
+    const invalid = await request(server.base, '/saves/1', {
+      method: 'PATCH', token,
+      body: { baseRevision: patched.data.revision, changes, profileChanges: [{ path: ['stats', 'bestDay'], value: 999 }] },
+    });
+    assert.equal(invalid.status, 400);
+  }
+  read = await request(server.base, '/saves/1', { token });
+  assert.deepEqual(read.data.save.state, updated);
+  assert.equal(read.data.save.revision, patched.data.revision);
+  assert.equal((await request(server.base, '/me', { token })).data.profile.stats.bestDay, 2);
+
+  // If a profile write fails after the slot update, neither write may commit.
+  const probe = new DatabaseSync(path.join(DATA_DIR, 'forgetax.db'));
+  try {
+    probe.exec(`CREATE TRIGGER fail_profile BEFORE UPDATE ON profiles
+      WHEN NEW.user_id = ${Number(registered.data.user.id)}
+      BEGIN SELECT RAISE(ABORT, 'injected write failure'); END;`);
+    const failed = await request(server.base, '/saves/1', {
+      method: 'PATCH', token, body: {
+        baseRevision: patched.data.revision, changes: [{ path: ['gold'], value: 21 }],
+        profileChanges: [{ path: ['stats', 'bestDay'], value: 3 }],
+      },
+    });
+    assert.equal(failed.status, 500);
+    read = await request(server.base, '/saves/1', { token });
+    assert.deepEqual(read.data.save.state, updated);
+    assert.equal(read.data.save.revision, patched.data.revision);
+    assert.equal((await request(server.base, '/me', { token })).data.profile.stats.bestDay, 2);
+  } finally {
+    probe.exec('DROP TRIGGER IF EXISTS fail_profile');
+    probe.close();
+  }
+
+  const arrayUpdate = { ...updated, swords: [{ id: 'b', level: 1 }, ...updated.swords] };
+  const arrayPatch = await request(server.base, '/saves/1', {
+    method: 'PATCH', token,
+    body: { baseRevision: patched.data.revision, changes: diffSave(updated, arrayUpdate) },
+  });
+  assert.equal(arrayPatch.status, 200);
+  assert.equal(arrayPatch.data.meta.swords, 2);
+  await stop(server);
+  server = await startApi();
+  read = await request(server.base, '/saves/1', { token });
+  assert.deepEqual(read.data.save.state, arrayUpdate);
+  assert.equal(read.data.save.revision, arrayPatch.data.revision);
+
+  await request(server.base, '/saves/1', { method: 'DELETE', token });
+  const recreated = await request(server.base, '/saves/1', { method: 'PUT', token, body: { state: initial } });
+  assert.notEqual(recreated.data.revision, arrayPatch.data.revision);
+  const oldPatch = await request(server.base, '/saves/1', {
+    method: 'PATCH', token, body: { baseRevision: arrayPatch.data.revision, changes: [] },
+  });
+  assert.equal(oldPatch.status, 409);
+  const options = await request(server.base, '/saves/1', { method: 'OPTIONS' });
+  assert.match(options.headers.get('access-control-allow-methods'), /PATCH/);
 });

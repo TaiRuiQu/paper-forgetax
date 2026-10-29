@@ -19,17 +19,18 @@ test('browser API uses its deployment path and isolates saved overrides', () => 
       localStorage: { getItem: key => saved.get(key), setItem: (key, value) => saved.set(key, value) },
     };
     vm.runInNewContext(source.replaceAll('import.meta.url', JSON.stringify(`${base}js/api.js`))
+      .replace(/^import .*;\r?$/gm, '')
       .replace(/^export /gm, '') + '\nglobalThis.result = API_BASE;', context);
     return context.result;
   }
-  assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
-  assert.equal(detect('https://games.paperagent.work/_v/0123456789abcdef/'), 'https://games.paperagent.work/api');
-  assert.equal(detect('https://games.paperagent.work/forgetax/_v/0123456789abcdef/'), 'https://games.paperagent.work/forgetax/api');
-  assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://games.paperagent.work/forgetax/api');
-  assert.equal(detect('https://games.paperagent.work/forgetax/', '?api=https://api.example.com/api/'), 'https://api.example.com/api');
-  assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://api.example.com/api');
-  assert.equal(detect('https://games.paperagent.work/forgetax/_v/fedcba9876543210/'), 'https://api.example.com/api');
-  assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
+  assert.equal(detect('https://game.example.com/'), 'https://game.example.com/api');
+  assert.equal(detect('https://game.example.com/_v/0123456789abcdef/'), 'https://game.example.com/api');
+  assert.equal(detect('https://game.example.com/forgetax/_v/0123456789abcdef/'), 'https://game.example.com/forgetax/api');
+  assert.equal(detect('https://game.example.com/forgetax/'), 'https://game.example.com/forgetax/api');
+  assert.equal(detect('https://game.example.com/forgetax/', '?api=https://api.example.com/api/'), 'https://api.example.com/api');
+  assert.equal(detect('https://game.example.com/forgetax/'), 'https://api.example.com/api');
+  assert.equal(detect('https://game.example.com/forgetax/_v/fedcba9876543210/'), 'https://api.example.com/api');
+  assert.equal(detect('https://game.example.com/'), 'https://game.example.com/api');
 });
 
 test('resource versions change with content, additions and removals, not timestamps', t => {

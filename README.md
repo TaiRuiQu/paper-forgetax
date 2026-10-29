@@ -1,4 +1,20 @@
-# FORGE TAX · 2D 锻剑还债
+# ⚠️ 非官方同人复刻 · 免责声明
+
+> **本项目是一款非商业性质的同人复刻（fan remake），与 ForgeTax 的开发者、发行商没有任何关联，也未获得其授权、认可或赞助。**
+>
+> - **原作**：[ForgeTax](https://store.steampowered.com/app/5245810/) 由 **GraveYardDev** 开发并在 Steam 发行。**ForgeTax** 的名称、商标及原作的一切知识产权归其各自权利人所有。
+>- **不含原作素材**：本仓库**没有**使用、提取、反编译或再分发原作的任何图片、音效、音乐、字体、代码或数据文件。仓库内所有剑、遗物、场景与 UI 美术均由本项目脚本（`scripts/`）程序化生成或使用内置 imagegen 生成，音效由 WebAudio 实时合成，字体使用 OFL 授权字体。
+> - **玩法研究来源**：规则与数值依据公开的 Steam 商店说明、开发者公告、Steam 成就和社区资料整理而成，记录见 `docs/reference/forgetax.md`；未对原作程序做逆向工程或逐帧测量。
+> - **仅供学习交流**：本项目用于技术学习、玩法研究与同人创作交流，**不用于销售、盈利或任何商业用途**。请支持原作，在 Steam 购买正版。
+> - **权利主张**：若权利人认为本项目存在不妥，请通过仓库 Issue 联系，作者将在核实后立即修改或下架相关内容。
+> 
+> 本项目源代码以 [MIT License](LICENSE) 授权；该授权仅覆盖本仓库中由本项目作者创作的内容，**不构成对原作任何权利的许可**。
+
+---
+
+![1793274637781.png](https://picui.ogmua.cn/s1/2026/10/29/6ae3331630769.webp)
+
+![1793274610995.png](https://picui.ogmua.cn/s1/2026/10/29/6ae333166dd21.webp)    
 
 一款按 `docs/reference/forgetax.md` 研究和复刻的 **2D 像素风 ForgeTax**。固定视角工坊、点击/拖拽操作、实时入神窗口、21 天契约、94 件遗物、9 条剑系、幽灵商人、图鉴、成就与无尽模式。
 
@@ -54,7 +70,7 @@ WEB_PORT=5173
 页面、样式、动态素材与模块引用均使用相对路径，可部署在 `/` 或 `/forgetax/` 等目录下。目录访问需要末尾斜杠。Caddy 与游戏在同一台主机时，使用 [deploy/Caddyfile](deploy/Caddyfile)：
 
 ```caddyfile
-games.paperagent.work {
+game.example.com {
     encode zstd gzip
     redir /forgetax /forgetax/?{query} 308
     handle_path /forgetax/* {
@@ -63,7 +79,7 @@ games.paperagent.work {
 }
 ```
 
-启动游戏后访问 `https://games.paperagent.work/forgetax/`，无需额外代理域名根目录的资源，也无需指定 `?api=`。前端及 API 通过同一个 HTTPS 入口访问；`5173` 应与 `.env` 的 `WEB_PORT` 一致。原有域名配置中已有站点块时，将这些规则合并到现有块中。
+启动游戏后访问 `https://game.example.com/forgetax/`，无需额外代理域名根目录的资源，也无需指定 `?api=`。前端及 API 通过同一个 HTTPS 入口访问；`5173` 应与 `.env` 的 `WEB_PORT` 一致。原有域名配置中已有站点块时，将这些规则合并到现有块中。
 
 ## 操作
 
@@ -170,8 +186,11 @@ tests/                    引擎、内容、API 集成测试
 | `GET` | `/api/saves` | 三个槽位（含状态与摘要） |
 | `GET` | `/api/saves/:slot` | 单个槽位 |
 | `PUT` | `/api/saves/:slot` | 保存状态并合并图鉴/成就/统计 |
+| `PATCH` | `/api/saves/:slot` | 按版本校验，只更新有变化的嵌套字段或数组元素 |
 | `DELETE` | `/api/saves/:slot` | 删除槽位 |
 | `POST` | `/api/profile` | 合并全局档案 |
+
+自动保存以 200ms 窗口合并操作，连续操作不会不断推迟保存。新槽位首次全量写入，之后只上传差异；数组长度改变时整体替换该数组，其余数组变化按元素字段更新。后端使用 SQLite JSON 字段更新，并在同一事务中保存槽位与共享档案。没有变化时不发请求；失败不会推进本地保存基线，重试仍会包含未确认的变化。存档版本冲突返回 409，需要重新载入，避免覆盖其他页面或设备的新进度。SQLite 仍按自身页与 WAL 机制落盘，增量更新不意味着只写几个物理字节。
 
 每个用户的数据在 SQLite 中以 `user_id` 隔离；密码使用随机盐 + scrypt；令牌使用服务端持久化密钥的 HMAC-SHA256。`GET /api/health` 可用于探活。
 
@@ -180,10 +199,10 @@ tests/                    引擎、内容、API 集成测试
 ```bash
 npm test
 # 等价于
-node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js tests/deployment.test.js
+node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js tests/deployment.test.js tests/save-sync.test.js
 ```
 
-当前 **75 项测试全部通过**，覆盖：
+当前 **83 项测试全部通过**，覆盖：
 
 - 剑值曲线（+0 320 G → +20 1,064,082 G）、大成功 +8→+10 的 20,503 G 示例；
 - 等级破碎曲线、1,000 格归一、相对减碎的乘算语义；
@@ -195,6 +214,7 @@ node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js
 - 所有素材文件、19 成就、16 个解锁映射、8 个初始遗物、九剑系图标；
 - 完整 21 天逐日模拟通关、商店满槽换遗物、全部遗物 x 5 结果冒烟、剑架/贡台/溢出队列、收藏家钩子、继承与供给加成；
 - 注册/登录/令牌篡改、双用户隔离、存档元数据、档案单调合并、SQLite 重启后持久化。
+- 增量字段与数组更新、空值与删除、无变化跳过、请求排队、失败重试、版本冲突、旧库迁移与事务回滚。
 - 根路径与子路径部署下的资源、模块与 API 转发，以及按游戏地址隔离的 API 配置；CSS 布局断点与 `device.js` 中的布局判定保持一致。
 
 素材与内容测试还会验证 94 个图标、54 个剑阶、场景与 UI 素材、字体是否齐全。
@@ -229,6 +249,7 @@ npm run assets
   - **Fusion Pixel 12px** — SIL Open Font License 1.1，见 `client/assets/fonts/LICENSES/fusion-pixel-OFL.txt`。
   - **Press Start 2P** — SIL Open Font License 1.1，见 `client/assets/fonts/LICENSES/press-start-2p-OFL.txt`。
 - 这是非官方同人复刻；**ForgeTax** 原作与商标归 GraveYardDev 所有。玩法研究依据见 `docs/reference/forgetax.md`。
+- 本项目源代码以 [MIT License](LICENSE) 授权，仅覆盖本仓库中由本项目作者创作的内容，不构成对原作的任何权利许可。
 
 ## 生产部署提示
 

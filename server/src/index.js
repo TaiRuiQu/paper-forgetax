@@ -3,7 +3,7 @@ import http from 'node:http';
 import { URL } from 'node:url';
 import {
   findUserByName, findUserById, createUser, getProfile, saveProfile,
-  listSaves, getSave, putSave, deleteSave,
+  listSaves, getSave, commitSave, deleteSave,
 } from './db.js';
 import {
   hashPassword, verifyPassword, issueToken, verifyToken,
@@ -11,6 +11,7 @@ import {
 } from './auth.js';
 import { mergeProfile, emptyProfile } from '../../shared/engine/engine.js';
 import { dayInfo } from '../../shared/data/gameData.js';
+import { applySavePatch } from '../../shared/savePatch.js';
 
 const PORT = Number(process.env.PORT || 3001);
 const HOST = process.env.HOST || '127.0.0.1';
@@ -23,7 +24,7 @@ function json(res, status, data) {
     'Content-Length': Buffer.byteLength(body),
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff',
   });
@@ -102,7 +103,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
       'Access-Control-Max-Age': '86400',
     });
     res.end();
@@ -176,8 +177,24 @@ const server = http.createServer(async (req, res) => {
         json(res, 200, { save });
         return;
       }
-      if (req.method === 'PUT') {
+      if (req.method === 'PUT' || req.method === 'PATCH') {
         const body = await readJson(req);
+        let changes = null;
+        if (req.method === 'PATCH') {
+          const previous = getSave(user.id, slot);
+          if (!previous || typeof body.baseRevision !== 'string' || previous.revision !== body.baseRevision) {
+            json(res, 409, { error: 'save-conflict', message: '云端存档已改变，请重新载入存档后继续。' });
+            return;
+          }
+          try {
+            changes = body.changes;
+            body.state = applySavePatch(previous.state, changes);
+            body.profile = applySavePatch(getProfile(user.id), body.profileChanges ?? []);
+          } catch {
+            json(res, 400, { error: 'invalid-patch', message: '增量存档数据无效。' });
+            return;
+          }
+        }
         if (!body.state || typeof body.state !== 'object' || Array.isArray(body.state)) {
           json(res, 400, { error: 'invalid-state', message: '存档数据无效。' });
           return;
@@ -191,9 +208,8 @@ const server = http.createServer(async (req, res) => {
           profile = mergeProfile(profile, body.profile);
         }
         const meta = metaFromState(body.state);
-        const updatedAt = putSave(user.id, slot, body.state, meta);
-        saveProfile(user.id, profile);
-        json(res, 200, { ok: true, slot, meta, updatedAt, profile });
+        const { updatedAt, revision } = commitSave(user.id, slot, body.state, meta, profile, changes, body.baseRevision);
+        json(res, 200, { ok: true, slot, meta, updatedAt, revision, profile });
         return;
       }
       if (req.method === 'DELETE') {

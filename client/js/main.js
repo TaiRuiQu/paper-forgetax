@@ -15,7 +15,7 @@ import * as Device from './device.js';
 import { wireTouch } from './touch.js';
 
 const CONSUMABLE_ORDER = ['cracked_dragon_scale', 'regret_clockwork', 'red_chalk', 'powder_pouch', 'cold_star_shard'];
-const SAVE_DELAY = 650;
+const SAVE_DELAY = 200;
 const UNCLOSABLE_MODALS = ['startRelic', 'daySummary', 'victory', 'death'];
 
 const settingsDefaults = { sound: true, volume: 0.65, reduceMotion: false, haptics: true, autoFullscreen: true };
@@ -38,7 +38,6 @@ const app = {
   modalPaused: false,
   saveTimer: null,
   savingPromise: null,
-  saveQueued: false,
   apiBase: Api.API_BASE,
   audio: new AudioEngine(),
   fx: null,
@@ -255,27 +254,32 @@ function setSync(status) {
 function scheduleSave(delay = SAVE_DELAY) {
   if (!app.state || !app.activeSlot) return;
   syncProfile();
-  clearTimeout(app.saveTimer);
   setSync('saving');
+  if (app.saveTimer !== null) return;
   app.saveTimer = setTimeout(() => flushSave({ silent: true }), delay);
 }
 
 async function flushSave({ silent = false } = {}) {
+  clearTimeout(app.saveTimer);
+  app.saveTimer = null;
   if (!app.state || !app.activeSlot || !Api.getToken()) return false;
-  if (app.savingPromise) {
-    app.saveQueued = true;
+  while (app.savingPromise) {
     await app.savingPromise.catch(() => false);
   }
+  if (!app.state || !app.activeSlot || !Api.getToken()) return false;
   clearTimeout(app.saveTimer);
+  app.saveTimer = null;
   syncProfile();
+  const slot = app.activeSlot;
   const state = E.prepareSave(app.state);
   const profile = JSON.parse(JSON.stringify(app.profile));
   setSync('saving');
-  const promise = Api.putSave(app.activeSlot, state, profile)
+  const promise = Api.putSave(slot, state, profile)
     .then(res => {
-      app.profile = res.profile || app.profile;
+      // Progress can change while a request is in flight.
+      if (res.profile) app.profile = E.mergeProfile(app.profile, res.profile);
       setSync('saved');
-      const found = app.saves.find(s => s.slot === app.activeSlot);
+      const found = app.saves.find(s => s.slot === slot);
       if (found) { found.meta = res.meta; found.updatedAt = res.updatedAt; }
       return true;
     })
@@ -286,10 +290,6 @@ async function flushSave({ silent = false } = {}) {
     })
     .finally(() => {
       app.savingPromise = null;
-      if (app.saveQueued) {
-        app.saveQueued = false;
-        scheduleSave(0);
-      }
     });
   app.savingPromise = promise;
   return promise;

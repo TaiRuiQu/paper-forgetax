@@ -1,5 +1,8 @@
 # Forge Tax 2D
 
+> **非官方同人复刻。** 与 ForgeTax 的开发者/发行商 GraveYardDev 无关联，未获授权或认可，不含原作任何素材，仅用于学习交流、不作商业用途。
+> 项目源代码以 MIT License 授权，该授权不构成对原作的任何权利许可。
+
 <!-- impeccable:product-schema 1 -->
 
 ## Platform

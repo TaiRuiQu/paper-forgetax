@@ -1,4 +1,4 @@
-games.paperagent.work {
+game.example.com {
     encode zstd gzip
 
     redir /forgetax /forgetax/?{query} 308

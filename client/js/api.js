@@ -1,3 +1,5 @@
+import { SaveSync } from '../shared/saveSync.js';
+
 const apiUrl = new URL('../api', import.meta.url);
 // Asset versions must not change the API endpoint or saved API override key.
 apiUrl.pathname = apiUrl.pathname.replace(/\/_v\/[a-f0-9]{16}\//, '/');
@@ -16,6 +18,8 @@ function detectBase() {
 
 export const API_BASE = detectBase();
 const TOKEN_KEY = 'forgetax.token';
+let sync = null;
+const saveSync = () => sync || (sync = new SaveSync(request));
 
 export class ApiError extends Error {
   constructor(message, code = 'error', status = 0) {
@@ -29,6 +33,7 @@ export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || '';
 }
 export function setToken(token) {
+  if (token !== getToken()) sync = null;
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
 }
@@ -77,6 +82,7 @@ export async function register(username, password) {
   const data = await request('/register', { method: 'POST', body: { username, password }, auth: false });
   setToken(data.token);
   setCachedUser(data.user);
+  saveSync().rememberProfile(data.profile);
   return data;
 }
 
@@ -84,35 +90,43 @@ export async function login(username, password) {
   const data = await request('/login', { method: 'POST', body: { username, password }, auth: false });
   setToken(data.token);
   setCachedUser(data.user);
+  saveSync().rememberProfile(data.profile);
   return data;
 }
 
 export async function me() {
   const data = await request('/me');
   setCachedUser(data.user);
+  saveSync().rememberProfile(data.profile);
   return data;
 }
 
 export async function getSaves() {
   const data = await request('/saves');
+  for (const save of data.slots || []) saveSync().remember(save);
   return data.slots || [];
 }
 
 export async function getSave(slot) {
   const data = await request(`/saves/${slot}`);
+  saveSync().remember(data.save);
   return data.save;
 }
 
 export async function putSave(slot, state, profile) {
-  return request(`/saves/${slot}`, { method: 'PUT', body: { state, profile } });
+  return saveSync().save(slot, state, profile);
 }
 
 export async function deleteSave(slot) {
-  return request(`/saves/${slot}`, { method: 'DELETE' });
+  const data = await request(`/saves/${slot}`, { method: 'DELETE' });
+  saveSync().slots.delete(slot);
+  return data;
 }
 
 export async function pushProfile(profile) {
-  return request('/profile', { method: 'POST', body: { profile } });
+  const data = await request('/profile', { method: 'POST', body: { profile } });
+  saveSync().rememberProfile(data.profile);
+  return data;
 }
 
 export function logout() {
