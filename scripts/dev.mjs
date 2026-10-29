@@ -1,3 +1,4 @@
+import '../server/env.js';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -44,8 +45,10 @@ console.log('/ /_  / __ \\/ ___/ __ \\  / / / __ `/| |');
 console.log('  /_/ /_/  /_/  /_/  /_/ /_/ /_/ /_/ |_|  (2D)');
 console.log('');
 console.log('Starting ForgeTax 2D...');
-console.log(`  Web:  http://127.0.0.1:${env.WEB_PORT || 5173}`);
-console.log(`  API:  http://127.0.0.1:${env.PORT || 3001}/api/health`);
+const host = env.HOST || '127.0.0.1';
+const urlHost = host.includes(':') ? `[${host}]` : host;
+console.log(`  Web:  http://${urlHost}:${env.WEB_PORT || 5173}`);
+console.log(`  API:  http://${urlHost}:${env.PORT || 3001}/api/health`);
 console.log('  Data: server/data/forgetax.db');
 console.log('  Stop with Ctrl+C');
 console.log('');

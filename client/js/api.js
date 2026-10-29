@@ -1,4 +1,6 @@
-const DEFAULT_API = `${location.protocol}//${location.hostname || '127.0.0.1'}:3001/api`;
+import { API_PORT } from '/runtime-config.js';
+
+const DEFAULT_API = `${location.protocol}//${location.hostname || '127.0.0.1'}:${API_PORT}/api`;
 
 function detectBase() {
   const fromQuery = new URLSearchParams(location.search).get('api');

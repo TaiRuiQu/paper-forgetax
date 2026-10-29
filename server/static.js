@@ -1,3 +1,4 @@
+import './env.js';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const CLIENT = path.join(ROOT, 'client');
 const SHARED = path.join(ROOT, 'shared');
-const PORT = Number(process.env.WEB_PORT || process.env.PORT || 5173);
+const PORT = Number(process.env.WEB_PORT || 5173);
 const HOST = process.env.HOST || '127.0.0.1';
 
 const MIME = {
@@ -41,6 +42,13 @@ const server = http.createServer((req, res) => {
   }
   let urlPath;
   try { urlPath = new URL(req.url, 'http://localhost').pathname; } catch { res.writeHead(400); res.end('Bad Request'); return; }
+
+  if (urlPath === '/runtime-config.js') {
+    const body = `export const API_PORT = ${JSON.stringify(Number(process.env.PORT || 3001))};\n`;
+    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+    res.end(req.method === 'HEAD' ? undefined : body);
+    return;
+  }
 
   let base = CLIENT;
   let rel = urlPath;

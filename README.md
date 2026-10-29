@@ -35,7 +35,17 @@ node scripts\dev.mjs
 | API | http://127.0.0.1:3001/api | 用户、存档、图鉴 |
 | SQLite | `server/data/forgetax.db` | 自动创建；已被 `.gitignore` |
 
-可选环境变量：`PORT`（API，默认 3001）、`WEB_PORT`（前端，默认 5173）、`HOST`（默认 127.0.0.1）、`FORGETAX_DATA_DIR`、`FORGETAX_SECRET`。若从其它主机访问，请设置 `HOST=0.0.0.0` 并通过 `?api=http://<host>:3001/api` 指定 API 地址；界面也会记住该地址。
+启动时自动读取项目根目录的 `.env`，可直接修改后重启；新检出的项目请先将 `.env.example` 复制为 `.env`。系统环境变量优先于文件配置，未创建 `.env` 时使用默认值。
+
+```dotenv
+HOST=127.0.0.1
+PORT=3001
+WEB_PORT=5173
+```
+
+`PORT` 为 API 端口，`WEB_PORT` 为前端端口，两者独立配置。前端自动使用当前访问主机和配置的 API 端口。若从其它主机访问，请设置 `HOST=0.0.0.0`，通过服务器的实际 IP 访问前端；也可通过 `?api=http://<host>:<port>/api` 手动指定 API 地址（界面会记住该地址，优先使用）。
+
+可选环境变量还有 `FORGETAX_DATA_DIR`（数据目录）、`FORGETAX_DB`（数据库文件）、`FORGETAX_SECRET_FILE`（签名密钥文件）和 `FORGETAX_SECRET`（直接指定签名密钥）。相对路径以启动时的工作目录为基准，跨目录启动时建议使用绝对路径。`.env` 已被 Git 忽略，请勿提交真实密钥；可提交的配置模板见 `.env.example`。
 
 ## 操作
 
