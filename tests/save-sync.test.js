@@ -36,6 +36,7 @@ test('unchanged saves skip requests and failed deltas are retained for retry', a
   let cloud;
   let revision = 0;
   const sync = new SaveSync(async (url, options) => {
+    if (!options) return { save: { slot: 1, state: structuredClone(cloud), revision: String(revision) } };
     requests.push(options);
     if (fail) throw new Error('offline');
     cloud = options.method === 'PUT' ? structuredClone(options.body.state) : applySavePatch(cloud, options.body.changes);
@@ -108,4 +109,88 @@ test('ordinary gameplay updates do not upload unchanged inventory or codex', () 
   assert.deepEqual(applySavePatch(before, delta.changes), after);
   assert.ok(!JSON.stringify(delta).includes('startingChoices'));
   assert.ok(JSON.stringify(delta).length < JSON.stringify({ state: after, profile: emptyProfile() }).length / 4);
+});
+
+function uncertainSave() {
+  let cloud = { slot: 1, state: { gold: 1, items: ['a'], updatedAt: 'old' }, revision: '1' };
+  let loseResponse = false;
+  let failRead = false;
+  const writes = [];
+  const sync = new SaveSync(async (url, options) => {
+    if (!options) {
+      if (failRead) throw new Error('offline');
+      return { save: structuredClone(cloud) };
+    }
+    assert.equal(options.method, 'PATCH');
+    if (options.body.baseRevision !== cloud.revision) {
+      throw Object.assign(new Error('conflict'), { code: 'save-conflict' });
+    }
+    cloud.state = applySavePatch(cloud.state, options.body.changes);
+    cloud.revision = String(Number(cloud.revision) + 1);
+    writes.push(structuredClone(options.body));
+    if (loseResponse) throw new Error('timeout after commit');
+    return { revision: cloud.revision, profile: {}, meta: {} };
+  });
+  sync.remember(cloud);
+  return {
+    sync, writes, cloud: () => cloud,
+    loseResponse: value => { loseResponse = value; },
+    failRead: value => { failRead = value; },
+  };
+}
+
+test('rapid queued saves recover a lost acknowledgement after gameplay advances', async () => {
+  const f = uncertainSave();
+  f.loseResponse(true);
+  await assert.rejects(f.sync.save(1, { gold: 2, items: ['a', 'b'] }, {}), /timeout/);
+  f.loseResponse(false);
+  const queued = Array.from({ length: 30 }, (_, i) => f.sync.save(1, { gold: i + 3, items: ['a', 'b'] }, {}));
+  await Promise.all(queued);
+  assert.deepEqual(f.cloud().state, { gold: 32, items: ['a', 'b'], updatedAt: 'old' });
+  assert.equal(f.sync.slots.get(1).revision, f.cloud().revision);
+  assert.equal(f.sync.unacknowledged.size, 0);
+  assert.ok(f.writes.slice(1).every(write => write.changes.every(change => change.path[0] !== 'items')));
+});
+
+test('failed reconciliation and another lost response do not poison future saves', async () => {
+  const f = uncertainSave();
+  f.loseResponse(true);
+  await assert.rejects(f.sync.save(1, { gold: 2 }, {}), /timeout/);
+  f.failRead(true);
+  await assert.rejects(f.sync.save(1, { gold: 3 }, {}), /offline/);
+  assert.deepEqual(f.sync.unacknowledged.get(1), { gold: 2 });
+  f.failRead(false);
+  await assert.rejects(f.sync.save(1, { gold: 4 }, {}), /timeout/);
+  f.loseResponse(false);
+  await f.sync.save(1, { gold: 5 }, {});
+  assert.deepEqual(f.cloud().state, { gold: 5, updatedAt: 'old' });
+});
+
+test('returning to the acknowledged state still undoes an uncertain committed write', async () => {
+  const f = uncertainSave();
+  const original = structuredClone(f.cloud().state);
+  f.loseResponse(true);
+  await assert.rejects(f.sync.save(1, { gold: 2, items: [] }, {}), /timeout/);
+  f.loseResponse(false);
+  await f.sync.save(1, original, {});
+  assert.deepEqual(f.cloud().state, original);
+  assert.equal(f.writes.length, 2);
+});
+
+test('an uncertain write never permits overwriting a different cloud save', async () => {
+  const f = uncertainSave();
+  f.loseResponse(true);
+  await assert.rejects(f.sync.save(1, { gold: 2 }, {}), /timeout/);
+  f.loseResponse(false);
+  f.cloud().state = { gold: 100, items: ['another player session'] };
+  f.cloud().revision = 'external';
+  for (const gold of [3, 4]) {
+    await assert.rejects(f.sync.save(1, { gold }, {}), { code: 'save-conflict' });
+  }
+  assert.equal(f.writes.length, 1);
+  assert.equal(f.cloud().state.gold, 100);
+  // Explicitly loading the cloud save resolves a real multi-client conflict.
+  f.sync.remember(f.cloud());
+  await f.sync.save(1, { gold: 101, items: ['another player session'] }, {});
+  assert.equal(f.cloud().state.gold, 101);
 });
