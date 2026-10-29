@@ -8,6 +8,7 @@ import {
 } from './helpers.js';
 
 import { tutorialObjective } from '../shared/engine/tutorial.js';
+import { isCompact, isTouchDevice } from './device.js';
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -630,24 +631,28 @@ export function renderTutorial(app) {
     layer.innerHTML = '';
     return;
   }
-  if (app._tutorialKey !== data.key && window.innerWidth <= 800) {
+  const compact = isCompact();
+  if (app._tutorialKey !== data.key && compact) {
     app.mobileTab = data.tab;
     applyMobileTab(app);
   }
   app._tutorialKey = data.key;
   layer.classList.remove('hidden');
-  const target = window.innerWidth <= 800
+  const target = compact
     ? { place: '#inventory-grid', heat: '#mab-heat', hammer: '#mab-hammer', tribute: '#tribute-drop', bell: '#btn-bell', recover: '#btn-bell' }[data.key]
     : { place: '#inventory-grid', heat: '#btn-heat', hammer: '#btn-hammer', tribute: '#tribute-drop', bell: '#btn-bell', recover: '#btn-bell' }[data.key];
   if (target) $(target)?.classList.add('guide-target');
+  // Keyboard hints mean nothing on a phone.
+  const touch = isTouchDevice();
+  const label = touch ? data.label.replace(/\s*·\s*SPACE$/, '') : data.label;
   layer.innerHTML = `
     <section class="tutorial-card" aria-label="首日实操引导">
       <div class="tutorial-progress" aria-label="第 ${data.step + 1} 步，共 6 步">${['拿剑','加热','锻造','献贡','敲铃','次日'].map((name, i) => `<span class="${i < data.step ? 'done' : i === data.step ? 'current' : ''}">${name}</span>`).join('')}</div>
       <h4 aria-live="polite">${esc(data.title)}</h4>
       <p>${esc(data.text)}</p>
       <div class="tutorial-actions">
-        <button class="btn btn-ghost btn-small" data-action="tutorial-skip">跳过 (P)</button>
-        <button class="btn btn-primary btn-small" data-action="tutorial-do">${esc(data.label)}</button>
+        <button class="btn btn-ghost btn-small" data-action="tutorial-skip">${touch ? '跳过' : '跳过 (P)'}</button>
+        <button class="btn btn-primary btn-small" data-action="tutorial-do">${esc(label)}</button>
       </div>
     </section>`;
 }

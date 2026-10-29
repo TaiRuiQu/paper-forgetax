@@ -2,12 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b090e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FORGE TAX">
+  <meta name="format-detection" content="telephone=no">
   <title>FORGE TAX · 2D 锻剑还债</title>
   <link rel="icon" href="./assets/ui/anvil.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.webmanifest">
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/workshop.css">
+  <link rel="stylesheet" href="./css/mobile.css">
 </head>
 <body>
   <div id="boot" class="boot-screen">
@@ -49,7 +57,10 @@
             <span>云端存档 · 三份契约 · 图鉴与成就跨存档共享</span>
           </div>
         </div>
-        <button class="btn btn-ghost btn-small landing-help" data-action="open-howto">玩法说明</button>
+        <div class="landing-corner">
+          <button class="icon-btn hidden" data-action="toggle-fullscreen" title="全屏"><img src="./assets/ui/fullscreen.svg" alt="全屏"></button>
+          <button class="btn btn-ghost btn-small landing-help" data-action="open-howto">玩法说明</button>
+        </div>
       </div>
       <div class="landing-footer">A 2D PIXEL TRIBUTE TO FORGETAX · FAN REMAKE · 2026</div>
     </section>
@@ -65,6 +76,7 @@
               <span class="user-label">铁匠</span>
               <strong id="menu-username">—</strong>
             </div>
+            <button class="icon-btn hidden" data-action="toggle-fullscreen" title="全屏"><img src="./assets/ui/fullscreen.svg" alt="全屏"></button>
             <button class="icon-btn" data-action="open-settings" title="设置"><img src="./assets/ui/settings.svg" alt="设置"></button>
             <button class="icon-btn" data-action="logout" title="退出登录"><img src="./assets/ui/logout.svg" alt="退出"></button>
           </div>
@@ -101,7 +113,7 @@
       <div class="game-bg-tint"></div>
       <div class="game-shell">
         <header id="hud" class="hud">
-          <div class="hud-day">
+          <div class="hud-day" data-action="open-calendar" title="查看日历">
             <div class="dragon-face" id="dragon-face"><img src="./assets/ui/dragon_calm.svg" alt="巨龙"></div>
             <div class="hud-day-text">
               <div class="hud-line"><span class="hud-kicker">契约</span><b id="hud-day">第 1 天</b><span id="hud-date" class="muted">4月15日</span></div>
@@ -132,6 +144,7 @@
           </div>
           <div class="hud-actions">
             <span class="sync-badge" id="sync-badge"><i></i><span>云端</span></span>
+            <button class="icon-btn hidden" data-action="toggle-fullscreen" title="全屏"><img src="./assets/ui/fullscreen.svg" alt="全屏"></button>
             <button class="icon-btn" data-action="open-codex" title="图鉴"><img src="./assets/ui/codex.svg" alt=""></button>
             <button class="icon-btn" data-action="open-achievements" title="成就"><img src="./assets/ui/trophy.svg" alt=""></button>
             <button class="icon-btn" data-action="open-menu" title="菜单 (Esc)"><img src="./assets/ui/settings.svg" alt=""></button>
@@ -236,7 +249,7 @@
                   <button class="btn btn-ghost btn-small" data-action="take-anvil" id="btn-take" title="E">取走剑</button>
                   <button class="btn btn-ghost btn-small" data-action="rewind" id="btn-rewind" title="R">回溯</button>
                 </div>
-                <button class="btn btn-hammer" data-action="hammer" id="btn-hammer">
+                <button class="btn btn-hammer" data-action="hammer" data-hammer-button id="btn-hammer">
                   <span class="hammer-icon"><img src="./assets/ui/hammer-forge.svg" alt=""></span>
                   <span class="hammer-label"><b>挥锤</b><small>SPACE</small></span>
                   <span class="cooldown-sweep" id="cooldown-sweep"></span>
@@ -285,13 +298,13 @@
           </div>
           <button class="btn btn-ghost btn-small mab-kit" data-action="open-kit" id="mab-kit">工具</button>
           <button class="btn btn-ember btn-small" data-action="heat" id="mab-heat">加热</button>
-          <button class="btn btn-primary btn-small mab-hammer" data-action="hammer" id="mab-hammer">挥锤</button>
+          <button class="btn btn-primary btn-small mab-hammer" data-action="hammer" data-hammer-button id="mab-hammer">挥锤</button>
         </div>
         <nav class="mobile-dock" id="mobile-dock">
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="forge"><img src="./assets/ui/anvil.svg" alt=""><span>铁砧</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="inventory"><img src="./assets/ui/sword.svg" alt=""><span>库存</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="shop"><img src="./assets/ui/swordcoin.svg" alt=""><span>商亭</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="tribute"><img src="./assets/ui/tribute.svg" alt=""><span>贡台</span><em id="dock-tribute-count">0</em></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="forge" data-drop="anvil"><img src="./assets/ui/anvil.svg" alt=""><span>铁砧</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="inventory" data-drop="floor"><img src="./assets/ui/sword.svg" alt=""><span>库存</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="shop" data-drop="vending"><img src="./assets/ui/swordcoin.svg" alt=""><span>商亭</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="tribute" data-drop="tribute"><img src="./assets/ui/tribute.svg" alt=""><span>贡台</span><em id="dock-tribute-count">0</em></button>
         </nav>
       </div>
       <div id="tutorial-layer" class="tutorial-layer hidden"></div>
@@ -303,6 +316,11 @@
   <div id="tooltip" class="tooltip hidden"></div>
   <canvas id="fx-canvas"></canvas>
   <div id="drag-ghost" class="drag-ghost hidden"></div>
+  <div id="rotate-hint" class="rotate-hint" role="alert">
+    <div class="rotate-phone" aria-hidden="true"><i></i></div>
+    <strong>请横屏锻剑</strong>
+    <span>把手机转到横向，工坊会自动继续。<br>计时已暂停。</span>
+  </div>
 
   <script type="module" src="./js/main.js"></script>
 </body>

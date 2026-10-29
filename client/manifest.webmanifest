@@ -1,0 +1,18 @@
+{
+  "name": "FORGE TAX · 锻剑还债",
+  "short_name": "FORGE TAX",
+  "description": "铸一柄好剑，喂一条饿龙。2D 像素锻剑还债。",
+  "lang": "zh-CN",
+  "start_url": "../../",
+  "scope": "../../",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#09070c",
+  "theme_color": "#0b090e",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

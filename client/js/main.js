@@ -11,11 +11,14 @@ import {
 import { RELIC_BY_ID } from '../shared/data/relics.js';
 import { ACHIEVEMENTS, CONSUMABLES, ACHIEVEMENT_BY_ID } from '../shared/data/gameData.js';
 import { hammerDisabledReason, consumeDisabledReason, bestSword } from './helpers.js';
+import * as Device from './device.js';
+import { wireTouch } from './touch.js';
 
 const CONSUMABLE_ORDER = ['cracked_dragon_scale', 'regret_clockwork', 'red_chalk', 'powder_pouch', 'cold_star_shard'];
 const SAVE_DELAY = 650;
+const UNCLOSABLE_MODALS = ['startRelic', 'daySummary', 'victory', 'death'];
 
-const settingsDefaults = { sound: true, volume: 0.65, reduceMotion: false };
+const settingsDefaults = { sound: true, volume: 0.65, reduceMotion: false, haptics: true, autoFullscreen: true };
 
 const app = {
   user: null,
@@ -47,6 +50,9 @@ const app = {
   _frenzyRemain: null,
   _cooldownRemain: 0,
   _modalPaused: false,
+  _interrupts: new Set(),
+  _interruptPaused: false,
+  haptic: pattern => Device.vibrate(app.settings.haptics, pattern),
 };
 
 window.__forgetax = app;
@@ -87,6 +93,68 @@ function navigate(name) {
   UI.setScreen(app, name);
   app.fx?.setAmbient(name === 'game');
   if (name !== 'game') app.audio.stopAmbience();
+  syncRotationHint();
+  if (name === 'game') armBackTrap();
+}
+
+// ---------------------------------------------------------------- mobile shell
+// On touch devices the system back gesture behaves like Esc inside the workshop
+// instead of leaving the page mid-run.
+function armBackTrap() {
+  if (app._backArmed || !Device.isTouchDevice()) return;
+  app._backArmed = true;
+  history.pushState({ forgetax: 'game' }, '');
+}
+
+function handleBack() {
+  if (app.modal) {
+    if (!UNCLOSABLE_MODALS.includes(app.modal.type) && app.modal.options?.closable !== false) Modals.closeModal(app);
+    return true;
+  }
+  if (app.screen === 'game') {
+    Modals.openMenu(app);
+    return true;
+  }
+  return false;
+}
+
+function onPopState() {
+  if (!app._backArmed) return;
+  app._backArmed = false;
+  if (handleBack() && app.screen === 'game') armBackTrap();
+}
+
+function renderFullscreenButtons() {
+  const available = Device.fullscreenSupported() && !Device.isStandalone();
+  const active = Device.isFullscreen();
+  document.querySelectorAll('[data-action="toggle-fullscreen"]').forEach(btn => {
+    btn.classList.toggle('hidden', !available);
+    btn.classList.toggle('is-active', active);
+    btn.title = active ? '退出全屏' : '全屏';
+    const img = btn.querySelector('img');
+    if (img) img.src = `./assets/ui/${active ? 'fullscreen-exit' : 'fullscreen'}.svg`;
+  });
+}
+
+// Called from the tap that opens a contract, so the browser accepts the request.
+function enterGameFullscreen() {
+  if (!Device.isTouchDevice() || Device.isStandalone()) return;
+  if (app.settings.autoFullscreen && Device.fullscreenSupported()) {
+    Device.enterFullscreen();
+    return;
+  }
+  if (Device.isIOS() && !Device.fullscreenSupported() && !localStorage.getItem('forgetax.iosHint')) {
+    localStorage.setItem('forgetax.iosHint', '1');
+    setTimeout(() => UI.toast(app, '想要全屏横屏？', '在 Safari 分享菜单里选择「添加到主屏幕」，从桌面图标进入即可全屏游玩。', 'info', 7000), 1200);
+  }
+}
+
+function onLayoutChange() {
+  syncRotationHint();
+  if (app.screen === 'game' && app.state) {
+    UI.renderAll(app);
+    UI.renderTutorial(app);
+  }
 }
 
 function showLanding() {
@@ -230,6 +298,11 @@ function pauseClock() {
 
 function resumeClock() {
   if (!app._clockPaused) return;
+  if (app._interrupts.size) {
+    // A modal closed while the app is hidden or waiting to be rotated.
+    app._interruptPaused = true;
+    return;
+  }
   app._clockPaused = false;
   const now = Date.now();
   if (app._frenzyRemain != null && app.state?.frenzy?.active) {
@@ -240,6 +313,27 @@ function resumeClock() {
   }
   app._frenzyRemain = null;
   app._cooldownRemain = 0;
+}
+
+// Backgrounding the app or rotating a phone upright must not eat the frenzy window.
+function setInterrupt(reason, on) {
+  if (on) app._interrupts.add(reason);
+  else app._interrupts.delete(reason);
+  if (app._interrupts.size) {
+    if (!app._clockPaused && app.state) {
+      pauseClock();
+      app._interruptPaused = true;
+    }
+  } else if (app._interruptPaused) {
+    app._interruptPaused = false;
+    if (!app._modalPaused) resumeClock();
+  }
+}
+
+function syncRotationHint() {
+  const blocked = app.screen === 'game' && Device.needsRotation();
+  document.body.classList.toggle('needs-rotation', blocked);
+  setInterrupt('rotation', blocked);
 }
 
 // ---------------------------------------------------------------- actions: helpers
@@ -503,6 +597,7 @@ function animateHammer(r) {
       app.audio.play('hammer');
       app.audio.play(sound);
       if (r.frenzyStarted) app.audio.play('frenzy');
+      app.haptic(r.frenzyStarted ? 'frenzy' : r.trueBreak ? 'break' : ['great', 'success', 'damage'].includes(r.result) ? r.result : 'hammer');
       const colorMap = { break: '#e05a4f', damage: '#ff9a4c', hold: '#a89d8b', success: '#78c69c', great: '#ffdc92' };
       app.fx?.forgeImpact({ broken: r.trueBreak, great: r.result === 'great' });
       const delta = r.levelAfter - r.levelBefore;
@@ -733,6 +828,7 @@ function confirmRing() {
   const res = E.ringBell(app.state);
   if (!res.ok) { failToast(res); return; }
   app.audio.play('bell');
+  app.haptic('bell');
   app.fx?.burstAt('#tribute-bar', 'gold', { count: 44, y: 0.4 });
   syncAchievements();
   recordRunStats();
@@ -770,7 +866,7 @@ function tutorialMobileTab(step) {
 }
 
 function applyTutorialTab() {
-  if (window.innerWidth <= 800 && app.state?.tutorial?.active) {
+  if (Device.isCompact() && app.state?.tutorial?.active) {
     app.mobileTab = tutorialMobileTab(app.tutorialStep);
     UI.applyMobileTab(app);
   }
@@ -799,6 +895,7 @@ function confirmDialog() {
       confirmRing();
       break;
     case 'overwrite-slot':
+      enterGameFullscreen();
       Modals.closeModal(app);
       startNewRun(payload.slot);
       break;
@@ -847,10 +944,11 @@ async function handleAction(action, el) {
     case 'open-relic': Modals.openRelicDetail(app, id); break;
     case 'open-merchant': if (app.state?.merchant) Modals.openMerchant(app); else UI.toast(app, '商人不在', '他在第 3、6、9、12、15、18、21 天到访。', 'info'); break;
     case 'buy-merchant': doBuyMerchant(Number(el.dataset.index)); break;
-    case 'slot-load': await loadSlot(Number(el.dataset.slot)); break;
+    case 'slot-load': enterGameFullscreen(); await loadSlot(Number(el.dataset.slot)); break;
     case 'slot-new': {
       const slot = Number(el.dataset.slot);
       const existing = app.saves.find(s => s.slot === slot && s.state);
+      if (!existing) enterGameFullscreen();
       if (existing) {
         Modals.openConfirm(app, {
           title: `覆盖存档槽 ${slot}？`,
@@ -901,6 +999,10 @@ async function handleAction(action, el) {
       });
       break;
     case 'logout': await logout(); break;
+    case 'toggle-fullscreen':
+      if (Device.isFullscreen()) await Device.exitFullscreen();
+      else await Device.enterFullscreen();
+      break;
     case 'heat': doHeat(); break;
     case 'hammer': doHammer(); break;
     case 'take-anvil': doTakeAnvil(); break;
@@ -921,7 +1023,7 @@ async function handleAction(action, el) {
     case 'sell-sword': sellSword(id); break;
     case 'claim-overflow': doClaimOverflow(); break;
     case 'tab-right': app.rightTab = el.dataset.tab; UI.renderRight(app); break;
-    case 'mobile-tab': app.mobileTab = el.dataset.tab; UI.applyMobileTab(app); break;
+    case 'mobile-tab': app.mobileTab = el.dataset.tab; UI.applyMobileTab(app); app.haptic('tap'); break;
     case 'buy-relic': doBuyRelic(Number(el.dataset.index)); break;
     case 'reroll-shop': doReroll(); break;
     case 'discard-relic-confirm':
@@ -979,6 +1081,7 @@ async function handleAction(action, el) {
       persistSettings();
       applySettings();
       if (key === 'sound' && app.settings.sound) { app.audio.ensure(); app.audio.play('click'); }
+      if (key === 'haptics') app.haptic('tap');
       Modals.refreshModal(app);
       break;
     }
@@ -1004,6 +1107,7 @@ function wireDragDrop() {
   if (right) right.dataset.drop = 'vending';
 
   document.addEventListener('dragstart', e => {
+    if (e.defaultPrevented) return;
     if (app._strikeInFlight) { e.preventDefault(); return; }
     const el = e.target.closest('[data-sword-id]');
     if (!el) return;
@@ -1038,16 +1142,18 @@ function wireDragDrop() {
     if (!zone) return;
     e.preventDefault();
     zone.classList.remove('drag-over');
-    const id = e.dataTransfer.getData('text/plain');
-    if (!id || !E.getSword(app.state, id)) return;
-    const target = zone.dataset.drop;
-    if (E.getSword(app.state, id).location === target) return;
-    if (target === 'anvil') doPlaceOnAnvil(id);
-    else if (target === 'tribute') doMove(id, 'tribute');
-    else if (target === 'rack') doMove(id, 'rack');
-    else if (target === 'floor') doMove(id, 'floor');
-    else if (target === 'vending') sellSword(id);
+    dropSword(e.dataTransfer.getData('text/plain'), zone.dataset.drop);
   });
+}
+
+function dropSword(id, target) {
+  if (!app.state || app._strikeInFlight || !id || !E.getSword(app.state, id)) return;
+  if (E.getSword(app.state, id).location === target) return;
+  if (target === 'anvil') doPlaceOnAnvil(id);
+  else if (target === 'tribute') doMove(id, 'tribute');
+  else if (target === 'rack') doMove(id, 'rack');
+  else if (target === 'floor') doMove(id, 'floor');
+  else if (target === 'vending') sellSword(id);
 }
 
 // ---------------------------------------------------------------- tooltips
@@ -1066,7 +1172,9 @@ function wireTooltips() {
     tipEl.style.left = `${left}px`;
     tipEl.style.top = `${top}px`;
   };
+  // Touch devices preview tooltips with a long press instead (touch.js).
   document.addEventListener('pointerover', e => {
+    if (e.pointerType === 'touch') return;
     const el = e.target.closest?.('[data-tip]');
     if (!el) return;
     if (current === el) return;
@@ -1086,15 +1194,18 @@ function wireTooltips() {
     if (current) position(e.clientX, e.clientY);
   });
   document.addEventListener('contextmenu', e => {
+    // Long-pressing on a phone raises contextmenu too; only a real right-click takes the sword.
+    if (app._lastPointerType !== 'mouse') return;
     if (app.screen === 'game' && !app.modal && e.target.closest('#anvil-stage')) {
       e.preventDefault();
       doTakeAnvil();
     }
   });
-  document.addEventListener('pointerdown', () => {
+  document.addEventListener('pointerdown', e => {
+    app._lastPointerType = e.pointerType;
     current = null;
     tipEl.classList.add('hidden');
-  });
+  }, true);
 }
 
 // ---------------------------------------------------------------- events
@@ -1126,12 +1237,7 @@ function wireEvents() {
       return;
     }
     if (e.key === 'Escape') {
-      if (app.modal) {
-        const t = app.modal.type;
-        if (!['startRelic', 'daySummary', 'victory', 'death'].includes(t)) Modals.closeModal(app);
-      } else if (app.screen === 'game') {
-        Modals.openMenu(app);
-      }
+      handleBack();
       return;
     }
     if (app.screen !== 'game' || app.modal) return;
@@ -1167,10 +1273,30 @@ function wireEvents() {
     if (document.hidden) {
       finishForgeStrike(true);
       if (app.state && app.activeSlot) flushSave({ silent: true });
+      app.audio.ctx?.suspend?.().catch(() => {});
+    } else if (app.settings.sound) {
+      app.audio.ensure();
     }
+    setInterrupt('hidden', document.hidden);
   });
+  // iOS keeps WebAudio locked until a touchend; resume it there as well.
+  document.addEventListener('touchend', () => { if (app.settings.sound) app.audio.ensure(); }, { once: true });
+  window.addEventListener('popstate', onPopState);
+  Device.onLayoutChange(onLayoutChange);
+  Device.onFullscreenChange(renderFullscreenButtons);
+  renderFullscreenButtons();
+  // Pinch-zoom only gets in the way of a fixed game screen on iOS.
+  document.addEventListener('gesturestart', e => { if (app.screen === 'game') e.preventDefault(); });
   wireDragDrop();
   wireTooltips();
+  wireTouch({
+    canDrag: () => Boolean(app.state) && app.screen === 'game' && !app.modal && !app._strikeInFlight,
+    onDrop: dropSword,
+    onSpringTab: tab => { app.mobileTab = tab; UI.applyMobileTab(app); },
+    onHammer: () => { if (app.screen === 'game' && !app.modal) doHammer(); },
+    canRepeatHammer: () => Boolean(app.state?.frenzy?.active) && !app.modal,
+    haptic: app.haptic,
+  });
 }
 
 // ---------------------------------------------------------------- ticks
@@ -1179,7 +1305,7 @@ function tickLoop() {
   const now = Date.now();
   if (now - lastTick < 120) return;
   lastTick = now;
-  if (!app.state || app.screen !== 'game' || app.modal || app._strikeInFlight) return;
+  if (!app.state || app.screen !== 'game' || app.modal || app._strikeInFlight || app._clockPaused) return;
   const wasFrenzy = app.state.frenzy.active;
   E.tick(app.state, now);
   if (wasFrenzy && !app.state.frenzy.active) {

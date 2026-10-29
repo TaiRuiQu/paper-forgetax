@@ -116,6 +116,16 @@ test('root and stripped subpath serve the module graph, assets and API', async t
       const response = await fetch(url);
       assert.equal(response.status, 200, url);
       const type = response.headers.get('content-type');
+      if (url.endsWith('.webmanifest')) {
+        // Installed web app: launches at the deployment root, fullscreen landscape.
+        assert.match(type, /application\/manifest\+json/);
+        const manifest = await response.json();
+        assert.equal(new URL(manifest.start_url, url).href, base);
+        assert.equal(new URL(manifest.scope, url).href, base);
+        assert.equal(manifest.orientation, 'landscape');
+        for (const icon of manifest.icons) await visit(new URL(icon.src, url).href);
+        return;
+      }
       if (!/text\/html|javascript|text\/css/.test(type)) return;
       const source = await response.text();
       const documentBase = type.includes('html')

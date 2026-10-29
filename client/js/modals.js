@@ -4,6 +4,7 @@ import {
   achievementIcon, swordArtPath, rarityOf, mergedCodex, achievementMap, phaseLabel, consumeDisabledReason,
 } from './helpers.js';
 import { TRIBUTE_DAYS, dayInfo } from '../shared/data/gameData.js';
+import { canVibrate, isTouchDevice, fullscreenSupported } from './device.js';
 
 const $ = sel => document.querySelector(sel);
 
@@ -67,8 +68,13 @@ function renderModal(app) {
   root.innerHTML = shell(cfg);
   const backdrop = root.querySelector('[data-modal-backdrop]');
   if (backdrop && cfg.closable !== false && MODAL_BACKDROP_CLOSE) {
-    backdrop.addEventListener('mousedown', e => {
-      if (e.target === backdrop) closeModal(app);
+    // Close on the click itself (not on press), so a tap on the backdrop is
+    // fully consumed and cannot land on the workshop underneath.
+    let pressedBackdrop = false;
+    backdrop.addEventListener('pointerdown', e => { pressedBackdrop = e.target === backdrop; });
+    backdrop.addEventListener('click', e => {
+      if (pressedBackdrop && e.target === backdrop) closeModal(app);
+      pressedBackdrop = false;
     });
   }
 }
@@ -600,6 +606,8 @@ function buildSettings(app) {
     body: `<div class="settings-row"><div><label>音效</label><small>锤击、结果、结算与界面音</small></div><button class="switch ${s.sound ? 'on' : ''}" data-action="toggle-setting" data-key="sound" aria-label="音效开关"></button></div>
     <div class="settings-row"><div><label>音量</label><small>合成音效的整体音量</small></div><input type="range" min="0" max="100" value="${Math.round((s.volume ?? 0.65) * 100)}" id="setting-volume"></div>
     <div class="settings-row"><div><label>减少动态</label><small>减少粒子、抖动与循环动画</small></div><button class="switch ${s.reduceMotion ? 'on' : ''}" data-action="toggle-setting" data-key="reduceMotion" aria-label="减少动态"></button></div>
+    ${canVibrate() ? `<div class="settings-row"><div><label>震动反馈</label><small>锤击、碎剑、入神与拖放时轻微震动</small></div><button class="switch ${s.haptics ? 'on' : ''}" data-action="toggle-setting" data-key="haptics" aria-label="震动反馈"></button></div>` : ''}
+    ${isTouchDevice() && fullscreenSupported() ? `<div class="settings-row"><div><label>进入契约时全屏</label><small>手机上自动全屏并锁定横屏</small></div><button class="switch ${s.autoFullscreen ? 'on' : ''}" data-action="toggle-setting" data-key="autoFullscreen" aria-label="进入契约时全屏"></button></div>` : ''}
     <div class="settings-row"><div><label>重看教程</label><small>从第一步开始重新引导</small></div><button class="btn btn-ghost btn-small" data-action="replay-tutorial">重看</button></div>
     <div class="settings-row"><div><label>账号</label><small>${app.user ? esc(app.user.username) : '未登录'}</small></div><button class="btn btn-ghost btn-small" data-action="logout">退出登录</button></div>
     <div class="modal-lore" style="font-size:9px;margin-top:8px">云端接口：${esc(app.apiBase || '')}</div>`,
@@ -625,6 +633,7 @@ function buildHowTo() {
     ['欠贡与怒气', '每次欠贡 +1 档怒气，第三档死亡。欠贡后次日仍有 3 把基础剑。遗忘之香每局一次；巨龙赦免状在死亡时救一次。'],
     ['契约后', '完成契约可继续锻造，贡额每天约 +20%。完成契约后再足额进贡 3 次，会解锁终身契约。'],
     ['快捷键', '空格 挥锤 · H 加热 · E / 右键铁砧 取走 · R 回溯 · 1–5 使用铁砧道具 · X 丢弃遗物 · Esc 菜单/关闭弹窗 · P 跳过教程。'],
+    ['触屏', '手机请横屏游玩。<b>长按</b>一把剑即可拿起，拖到铁砧、剑架、贡台或左侧标签上放下；长按遗物与道具查看说明。入神期间<b>按住</b>挥锤会连续锻造。系统返回手势等同 Esc。'],
   ];
   return {
     title: '玩法说明',
