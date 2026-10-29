@@ -1,16 +1,34 @@
 // Layout modes, fullscreen and haptics for touch devices.
 // Keep these queries in sync with the media queries in style.css,
-// workshop.css and mobile.css.
-export const PORTRAIT_COMPACT_QUERY = '(max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait)';
+// workshop.css, mobile.css and fold.css.
+export const PORTRAIT_COMPACT_QUERY = '(max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine)';
 export const LANDSCAPE_COMPACT_QUERY = '(orientation: landscape) and (max-height: 540px)';
 export const PORTRAIT_PHONE_QUERY = '(orientation: portrait) and (max-width: 540px) and (pointer: coarse)';
+// Unfolded foldables, dual-screen phones and small tablets: near-square touch
+// screens big enough to show the whole workshop at once.
+export const FOLD_QUERY = '(pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 1180px)';
+// Half-folded: the hinge splits the viewport into two segments.
+const BOOK_QUERY = '(horizontal-viewport-segments: 2)';
+const TABLETOP_QUERY = '(vertical-viewport-segments: 2)';
 const TOUCH_QUERY = '(pointer: coarse)';
 
 const mq = query => window.matchMedia(query);
 
-// Tabbed workshop: the portrait column on narrow windows or the landscape phone layout.
+// Tabbed workshop: the portrait column on narrow windows, the landscape phone
+// layout, or the fold layout (whose ledger panel switches between tribute and shop).
 export function isCompact() {
-  return mq(PORTRAIT_COMPACT_QUERY).matches || mq(LANDSCAPE_COMPACT_QUERY).matches;
+  return mq(PORTRAIT_COMPACT_QUERY).matches || mq(LANDSCAPE_COMPACT_QUERY).matches || isFold();
+}
+
+export function isFold() {
+  return mq(FOLD_QUERY).matches;
+}
+
+// 'book' (hinge runs top to bottom), 'tabletop' (hinge runs side to side) or 'flat'.
+export function foldPosture() {
+  if (mq(BOOK_QUERY).matches) return 'book';
+  if (mq(TABLETOP_QUERY).matches) return 'tabletop';
+  return 'flat';
 }
 
 export function isTouchDevice() {
@@ -23,7 +41,7 @@ export function needsRotation() {
 }
 
 export function onLayoutChange(callback) {
-  for (const query of [PORTRAIT_COMPACT_QUERY, LANDSCAPE_COMPACT_QUERY, PORTRAIT_PHONE_QUERY]) {
+  for (const query of [PORTRAIT_COMPACT_QUERY, LANDSCAPE_COMPACT_QUERY, PORTRAIT_PHONE_QUERY, FOLD_QUERY, BOOK_QUERY, TABLETOP_QUERY]) {
     mq(query).addEventListener('change', callback);
   }
 }
@@ -68,13 +86,22 @@ export async function exitFullscreen() {
   } catch { /* ignore */ }
 }
 
-async function lockLandscape() {
+// Phones play in landscape. Unfolded screens work either way round, so they stay free.
+export async function lockLandscape() {
+  if (isFold()) {
+    unlockOrientation();
+    return true;
+  }
   try {
     await screen.orientation?.lock?.('landscape');
     return true;
   } catch {
     return false;
   }
+}
+
+export function unlockOrientation() {
+  try { screen.orientation?.unlock?.(); } catch { /* ignore */ }
 }
 
 export function onFullscreenChange(callback) {

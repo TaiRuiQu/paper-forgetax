@@ -151,6 +151,14 @@ function enterGameFullscreen() {
 
 function onLayoutChange() {
   syncRotationHint();
+  // Unfolding or folding swaps between the fold layout and the phone layouts,
+  // whose tabs mean different things; start again from the anvil.
+  const fold = Device.isFold();
+  if (fold !== app._foldLayout) {
+    app._foldLayout = fold;
+    app.mobileTab = 'forge';
+    if (Device.isFullscreen() && Device.isTouchDevice()) Device.lockLandscape();
+  }
   if (app.screen === 'game' && app.state) {
     UI.renderAll(app);
     UI.renderTutorial(app);
@@ -506,7 +514,7 @@ async function chooseStartRelic(id) {
   if (!res.ok) { failToast(res); return; }
   Modals.closeModal(app);
   app.audio.play('buy');
-  app.fx?.burstAt('#anvil-stage', 'gold', { count: 30, y: 0.5 });
+  app.fx?.burstAt(['#anvil-stage', '.hud-quota'], 'gold', { count: 30, y: 0.5 });
   UI.toast(app, '遗物已入袋', `${RELIC_BY_ID[id].zh}：${RELIC_BY_ID[id].desc}`, 'success', 4600);
   syncAchievements();
   UI.renderAll(app);
@@ -591,6 +599,8 @@ function animateHammer(r) {
       const rect = document.getElementById('forge-flash').getBoundingClientRect();
       const x = rect.left + rect.width / 2;
       const y = rect.top + rect.height / 2;
+      // A hidden anvil (another phone tab) has no box; its numbers would land at 0,0.
+      const onStage = rect.width > 0 && rect.height > 0;
       let sound = r.result;
       if (r.trueBreak) sound = 'break';
       else if (r.protectedBy) sound = 'protect';
@@ -606,14 +616,14 @@ function animateHammer(r) {
         const bits = [];
         if (delta) bits.push(`${delta > 0 ? '+' : ''}${delta}级`);
         if (valueDelta) bits.push(`${valueDelta > 0 ? '+' : ''}${compact(valueDelta)} G`);
-        if (bits.length) app.fx?.floatText(x, y, bits.join(' · '), colorMap[r.result] || '#ffdc92', true);
-      } else {
+        if (bits.length && onStage) app.fx?.floatText(x, y, bits.join(' · '), colorMap[r.result] || '#ffdc92', true);
+      } else if (onStage) {
         app.fx?.floatText(x, y, '剑碎了', '#e05a4f', true);
       }
       showResultBanner(r);
       if (r.frenzyStarted) {
         UI.toast(app, '入神启动', `安全窗口 ${((E.frenzyDuration(app.state)) / 1000).toFixed(0)} 秒：期间不会破碎。`, 'success', 3600);
-        app.fx?.burstAt('#anvil-stage', 'great', { count: 40 });
+        app.fx?.burstAt(['#anvil-stage', '.hud-quota'], 'great', { count: 40 });
       }
       if (r.trueBreak) {
         UI.toast(app, '剑碎了', '如果还有悔恨发条，可以回溯这一锤。', 'error', 4200);
@@ -645,7 +655,7 @@ function doHeat() {
   const res = E.heatAnvilSword(app.state);
   if (failToast(res)) return;
   app.audio.play('heat');
-  app.fx?.burstAt('#forge-card', 'ember', { count: 20, y: 0.6 });
+  app.fx?.burstAt(['#forge-card', '#anvil-sword', '#mab-heat'], 'ember', { count: 20, y: 0.6 });
   afterChange();
 }
 
@@ -664,7 +674,7 @@ function doRewind() {
   if (failToast(res)) return;
   if (app.modal?.type === 'kit') Modals.closeModal(app);
   app.audio.play('rewind');
-  app.fx?.burstAt('#anvil-stage', 'gold', { count: 26, y: 0.5 });
+  app.fx?.burstAt(['#anvil-stage', '.hud-quota'], 'gold', { count: 26, y: 0.5 });
   UI.toast(app, '回溯完成', '上一锤连同金币、充能与遗物副作用一起撤回。', 'success');
   afterChange();
 }
@@ -678,7 +688,7 @@ function doUseConsumable(key) {
   if (app.modal?.type === 'kit') Modals.closeModal(app);
   app.audio.play('buy');
   const c = CONSUMABLES[key];
-  app.fx?.burstAt('#consume-row', 'ember', { count: 14 });
+  app.fx?.burstAt(['#consume-row', '#anvil-sword', '#anvil-stage'], 'ember', { count: 14 });
   UI.toast(app, `使用了${c.zh}`, '', 'info', 2200);
   afterChange();
 }
@@ -829,7 +839,7 @@ function confirmRing() {
   if (!res.ok) { failToast(res); return; }
   app.audio.play('bell');
   app.haptic('bell');
-  app.fx?.burstAt('#tribute-bar', 'gold', { count: 44, y: 0.4 });
+  app.fx?.burstAt(['#tribute-bar', '.hud-quota'], 'gold', { count: 44, y: 0.4 });
   syncAchievements();
   recordRunStats();
   UI.renderAll(app);
@@ -1009,7 +1019,8 @@ async function handleAction(action, el) {
     case 'rewind': doRewind(); break;
     case 'use-consumable': doUseConsumable(el.dataset.key); break;
     case 'select-sword':
-      app.selectedSwordId = id;
+      // On the fold layout a selected sword is "in hand"; tapping it again puts it down.
+      app.selectedSwordId = Device.isFold() && app.selectedSwordId === id ? null : id;
       app.audio.play('click');
       UI.renderLeft(app);
       UI.renderCenter(app);
@@ -1146,6 +1157,30 @@ function wireDragDrop() {
   });
 }
 
+// Fold layout: with a sword in hand, tapping the empty anvil, the tribute
+// table or the rack puts it there, so the two thumbs can work together
+// instead of dragging across a wide screen.
+const TAP_TARGETS = ['anvil', 'tribute', 'rack'];
+function tapToPlace(e) {
+  if (!Device.isFold() || app.screen !== 'game' || app.modal || !app.state || app._strikeInFlight) return;
+  const sw = heldSword();
+  const zone = e.target.closest('[data-drop]');
+  if (!sw || !zone || !TAP_TARGETS.includes(zone.dataset.drop)) return;
+  if (zone.dataset.drop === 'anvil' && E.getAnvilSword(app.state)) return;
+  app.haptic('drop');
+  dropSword(sw.id, zone.dataset.drop);
+  // A racked sword is put away, not still in hand.
+  if (zone.dataset.drop === 'rack' && app.selectedSwordId === sw.id) {
+    app.selectedSwordId = null;
+    UI.renderAll(app);
+  }
+}
+
+function heldSword() {
+  const sw = app.selectedSwordId ? E.getSword(app.state, app.selectedSwordId) : null;
+  return sw && (sw.location === 'floor' || sw.location === 'rack') ? sw : null;
+}
+
 function dropSword(id, target) {
   if (!app.state || app._strikeInFlight || !id || !E.getSword(app.state, id)) return;
   if (E.getSword(app.state, id).location === target) return;
@@ -1213,7 +1248,8 @@ function wireEvents() {
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applySettings);
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-action]');
-    if (!el || el.disabled) return;
+    if (!el) { tapToPlace(e); return; }
+    if (el.disabled) return;
     if (e.target.closest('input, textarea, select')) return;
     const action = el.dataset.action;
     if (app._strikeInFlight) return;
@@ -1282,6 +1318,7 @@ function wireEvents() {
   // iOS keeps WebAudio locked until a touchend; resume it there as well.
   document.addEventListener('touchend', () => { if (app.settings.sound) app.audio.ensure(); }, { once: true });
   window.addEventListener('popstate', onPopState);
+  app._foldLayout = Device.isFold();
   Device.onLayoutChange(onLayoutChange);
   Device.onFullscreenChange(renderFullscreenButtons);
   renderFullscreenButtons();

@@ -1,0 +1,412 @@
+/* ============================================================
+   FORGE TAX · foldables, dual-screen phones and small tablets
+   Near-square touch screens (unfolded Galaxy Z Fold, Xiaomi Mix Fold,
+   Pixel Fold, Surface Duo spanned, iPad mini …) show the whole workshop
+   at once instead of the phone tabs:
+
+     stash (left thumb) │ anvil │ ledger: tribute / shop
+                        │ stats │ heat · hammer (right thumb)
+
+   Half-folded, the layout follows the hinge (Viewport Segments API):
+   tabletop puts the anvil on the upright half and every control on the
+   flat half; book (and a spanned Surface Duo) puts the stash and ledger
+   on one page and the forge on the other.
+   Loaded last. FOLD_QUERY in client/js/device.js mirrors the query here.
+   ============================================================ */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 1180px) {
+  :root {
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --hud-h: 58px;
+    --stash-w: clamp(232px, 28vw, 312px);
+    --ledger-w: clamp(240px, 30vw, 330px);
+    --fold-gap: 8px;
+  }
+
+  #screen-game { height: 100dvh; }
+  #screen-game .game-shell {
+    display: grid; height: 100%; min-height: 0; gap: 0 var(--fold-gap);
+    padding: 0 calc(var(--fold-gap) + var(--safe-r)) max(var(--fold-gap), var(--safe-b)) calc(var(--fold-gap) + var(--safe-l));
+    grid-template-columns: var(--stash-w) minmax(0, 1fr) var(--ledger-w);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "hud   hud   hud"
+      "stash stage tabs"
+      "stash stage ledger"
+      "stash stats thumbs";
+  }
+  #screen-game .workshop, #screen-game .center-panel { display: contents; }
+  #screen-game .left-panel .forge-card, #screen-game .controls .main-controls,
+  #screen-game .controls .consume-row, #screen-game .mab-info,
+  #screen-game .mobile-dock-btn[data-tab="forge"], #screen-game .mobile-dock-btn[data-tab="inventory"] { display: none; }
+
+  /* ---- HUD: one full-width bar ---- */
+  #screen-game .hud {
+    grid-area: hud; display: flex; align-items: center; gap: 14px;
+    height: auto; min-height: calc(var(--hud-h) + var(--safe-t)); flex: none; margin: 0 calc(-1 * (var(--fold-gap) + var(--safe-r))) var(--fold-gap) calc(-1 * (var(--fold-gap) + var(--safe-l)));
+    padding: var(--safe-t) calc(12px + var(--safe-r)) 0 calc(14px + var(--safe-l));
+    background: linear-gradient(180deg, #0c0a08f5, #0c0a08d9);
+    border-bottom: 1px solid #3b2d33; box-shadow: 0 3px 10px rgba(0,0,0,.35);
+  }
+  #screen-game .hud-day { flex: 0 0 auto; gap: 8px; }
+  #screen-game .dragon-face { width: 38px; height: 38px; flex-basis: 38px; }
+  #screen-game .hud-day .hud-kicker, #screen-game .hud-line.small { display: none; }
+  #screen-game .hud-line { gap: 6px; }
+  #screen-game .hud-line b { font-size: 16px; }
+  #screen-game #hud-date { font-size: 11px; }
+  #screen-game .hud-quota { flex: 1 1 auto; min-width: 120px; padding: 0; }
+  #screen-game .hud-quota-top { gap: 6px; }
+  #screen-game .hud-quota-top .hud-kicker { font-size: 11px; }
+  #screen-game .hud-quota-top b { font-size: 14px; }
+  #screen-game .hud-tribute { display: inline; font-size: 11px; }
+  #screen-game .quota-bar { height: 6px; margin-top: 4px; }
+  #screen-game .hud-res { flex: 0 0 auto; gap: 12px; padding: 0; }
+  #screen-game .res-chip { gap: 5px; background: none; border: 0; padding: 0; }
+  #screen-game .res-chip img { width: 18px; height: 18px; }
+  #screen-game .res-chip > div { display: flex; flex-direction: column; }
+  #screen-game .res-chip span, #screen-game .anger-chip > span { display: block; font-size: 9px; }
+  #screen-game .res-chip b { font-size: 11px; color: var(--gold-bright); }
+  #screen-game .anger-chip { padding-left: 10px; border-left: 1px solid var(--line-soft); }
+  #screen-game .anger-marks i { width: 13px; height: 9px; }
+  #screen-game .hud-actions { flex: 0 0 auto; gap: 6px; position: static; }
+  #screen-game .sync-badge { display: inline-flex; margin-right: 2px; }
+  #screen-game .sync-badge span { display: none; }
+  #screen-game .icon-btn { width: 40px; height: 40px; }
+  #screen-game .icon-btn img { width: 20px; height: 20px; }
+
+  /* ---- stash: rack and floor, always on screen ---- */
+  #screen-game .left-panel {
+    grid-area: stash; position: relative; inset: auto; width: auto; max-height: none;
+    display: flex; flex-direction: column; gap: var(--fold-gap); min-height: 0; overflow: hidden;
+    padding: 0; background: none; pointer-events: auto;
+  }
+  #screen-game .left-panel .rack-block {
+    position: relative; inset: auto; flex: 0 0 auto; padding: 0 10px 10px; background: #16110ee6;
+  }
+  #screen-game .rack-block .panel-title { padding: 8px 0 6px; }
+  #screen-game .rack-row { gap: 6px; }
+  #screen-game .rack-slot { min-height: 68px; }
+  #screen-game .rack-slot img.rack-sword { width: 62px; height: 32px; }
+  #screen-game .left-panel .inventory-block {
+    position: relative; inset: auto; flex: 1 1 auto; min-height: 0; max-height: none;
+    display: flex; flex-direction: column; padding: 2px 10px 8px; background: #16110eeb; box-shadow: none;
+  }
+  #screen-game .inventory-block .panel-title { padding: 8px 0 4px; }
+  #screen-game .inv-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  #screen-game .inv-row { padding: 6px 4px; }
+  #screen-game .inv-icon { width: 58px; flex-basis: 58px; }
+  #screen-game .inv-icon img { width: 56px; }
+  #screen-game .inv-name { font-size: 13px; }
+  #screen-game .inv-row .mini-btn { min-height: 40px; padding: 6px 12px; font-size: 12px; }
+  #screen-game .overflow-row button, #screen-game #claim-overflow { min-height: 36px; }
+  /* The selected-sword actions sit at the bottom of the stash, under the left thumb. */
+  #screen-game .sword-context { flex: 0 0 auto; padding: 8px 0 0; min-height: 44px; }
+  #screen-game .sword-context .ctx-label { font-size: 11px; }
+  #screen-game .sword-context .ctx-name { max-width: 100%; font-size: 12px; }
+  #screen-game .sword-context .ctx-name em { font-size: 8px; }
+  #screen-game .sword-context .ctx-actions { gap: 5px; }
+  #screen-game .sword-context .mini-btn { min-height: 38px; padding: 4px 10px; font-size: 12px; }
+
+  /* ---- anvil stage ---- */
+  #screen-game .anvil-stage {
+    grid-area: stage; position: relative; inset: auto; width: auto; height: auto; min-height: 0;
+    overflow: hidden; z-index: 0; isolation: isolate; container-type: size;
+  }
+  #screen-game .forge-rig {
+    bottom: 10px;
+    width: min(78cqw, calc((100cqh - 110px) * 1.05), 460px);
+  }
+  #screen-game .stage-swordname { top: 10px; width: 94%; max-width: 94%; }
+  #screen-game .stage-swordname h2 { font-size: 21px; }
+  #screen-game .sword-subline { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #screen-game .stage-chips { top: 58px; max-width: 94%; gap: 4px; }
+  #screen-game .stage-chips .chip { font-size: 10px; padding: 2px 6px; }
+  #screen-game .stage-empty { top: 22%; width: min(320px, 90%); padding: 12px; }
+  #screen-game .frenzy-copy { top: 84px; }
+  #screen-game .frenzy-ready { bottom: 6px; font-size: 11px; }
+  #screen-game .controls {
+    grid-area: stage; align-self: end; position: relative; inset: auto;
+    margin: 0 8px 30px; padding: 0; z-index: 8; pointer-events: none;
+  }
+  #screen-game .buff-strip { min-height: 0; justify-content: center; }
+
+  /* ---- sword stats and odds under the anvil ---- */
+  #screen-game .stat-prob-grid {
+    grid-area: stats; position: relative; inset: auto; align-self: end;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--fold-gap); min-height: 0;
+    margin: var(--fold-gap) 0 0;
+  }
+  #screen-game .sword-stats, #screen-game .prob-panel { min-height: 0; padding: 8px 10px; background: #13110de6; }
+  #screen-game .prob-panel { padding: 0; }
+  #screen-game .stat-main { padding: 0; gap: 8px; }
+  #screen-game .level-medallion { width: 42px; height: 42px; flex-basis: 42px; }
+  #screen-game .level-medallion b { font-size: 14px; }
+  #screen-game .value-block span { font-size: 11px; }
+  #screen-game .value-block b { font-size: 13px; }
+  #screen-game .charge-block { padding: 4px 0; }
+  #screen-game .charge-label { font-size: 11px; }
+  #screen-game .layer-chips { display: none; }
+  #screen-game .sword-actions { padding: 4px 0 0; gap: 5px; flex-wrap: wrap; }
+  #screen-game .sword-actions .btn { flex: 1 1 auto; min-height: 38px; padding: 4px 8px; font-size: 12px; }
+  #screen-game .prob-panel .odds-details { display: none; }
+  #screen-game .prob-bars { height: 100%; padding: 8px 10px; gap: 5px; justify-content: center; }
+  #screen-game .prob-row { grid-template-columns: 40px 1fr 50px; gap: 6px; }
+  #screen-game .prob-row .plabel { font-size: 11px; }
+  #screen-game .prob-row .pval { font-size: 9px; }
+  #screen-game .prob-bars .empty-state { padding: 10px 4px; font-size: 12px; }
+
+  /* ---- ledger tabs: tribute / shop. Holding a sword over one springs it open. ---- */
+  #screen-game .mobile-dock {
+    grid-area: tabs; display: flex; flex: none; gap: 4px; padding: 0 0 6px;
+    background: none; border: 0; box-shadow: none;
+  }
+  #screen-game .mobile-dock-btn {
+    position: relative; flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px;
+    background: #15110de6; border: 0; border-bottom: 2px solid #44322f;
+    color: var(--muted-2); font-size: 13px; letter-spacing: .1em;
+  }
+  #screen-game .mobile-dock-btn img { width: 20px; height: 20px; opacity: .55; }
+  #screen-game .mobile-dock-btn.active { color: var(--gold-bright); background: #2a1f16f0; border-bottom-color: var(--gold); }
+  #screen-game .mobile-dock-btn.active img { opacity: 1; }
+  #screen-game .mobile-dock-btn em { position: static; font-style: normal; font-family: var(--font-num); font-size: 8px; color: var(--gold); background: #231a19; border: 1px solid #5d452c; padding: 1px 4px; }
+  #screen-game.is-carrying .mobile-dock-btn[data-tab="tribute"]:not(.active) { color: var(--bone); box-shadow: inset 0 0 0 1px rgba(232,180,90,.45); }
+
+  /* ---- ledger: tribute table ---- */
+  #screen-game .tribute-bar { display: none; }
+  #screen-game:not(.mobile-tab-shop) .tribute-bar {
+    grid-area: ledger; display: grid; position: relative; inset: auto;
+    width: auto; height: auto; min-height: 0; max-height: none; margin: 0; transform: none;
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px;
+    padding: 10px 12px 12px;
+  }
+  #screen-game .tribute-head { flex-direction: row; align-items: center; justify-content: space-between; padding: 0; }
+  #screen-game .tribute-head .panel-title { padding: 2px 0; }
+  #screen-game .tribute-quota b { font-size: 11px; }
+  #screen-game .tribute-drop {
+    min-height: 0; display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-start;
+    gap: 8px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 8px;
+  }
+  #screen-game .tribute-drop.empty { align-content: center; }
+  #screen-game .tribute-sword { flex: 0 0 104px; padding: 4px 4px 6px; background: #120e0ccc; }
+  #screen-game .tribute-sword img { height: 50px; }
+  #screen-game .tribute-sword .ts-name { font-size: 10px; }
+  #screen-game .tribute-sword .ts-value { font-size: 7px; }
+  #screen-game .tribute-sword .ts-remove { min-width: 44px; min-height: 32px; font-size: 11px; }
+  #screen-game .tribute-action { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+  #screen-game .tribute-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
+  #screen-game .tribute-total b { font-size: 15px; }
+  #screen-game .btn-bell { width: 100%; height: auto; min-height: 56px; }
+
+  /* ---- ledger: relic shop and owned relics ---- */
+  #screen-game .right-panel { display: none; }
+  #screen-game.mobile-tab-shop .right-panel {
+    grid-area: ledger; display: flex; flex-direction: column; position: relative; inset: auto;
+    width: auto; height: auto; max-height: none; min-height: 0; gap: 6px; overflow: hidden;
+    padding: 8px 10px; background: #11100eeb;
+  }
+  #screen-game .right-tabs { flex: 0 0 auto; flex-direction: row; }
+  #screen-game .right-tab { flex: 1 1 0; min-height: 40px; padding: 6px 8px; font-size: 12px; }
+  #screen-game .right-content { flex: 1; min-height: 0; height: auto; overflow-y: auto; overscroll-behavior: contain; padding: 2px 0; }
+  #screen-game .shop-item { grid-template-columns: 50px minmax(0, 1fr); }
+  #screen-game .shop-buy .btn, #screen-game .reroll-row .btn { min-height: 40px; padding: 4px 12px; font-size: 12px; }
+  #screen-game .relic-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #screen-game .relic-slot img { width: 42px; height: 42px; }
+
+  /* ---- thumb controls ---- */
+  #screen-game .mobile-actionbar {
+    grid-area: thumbs; position: relative; inset: auto; height: auto; z-index: 5; align-self: end;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "kit heat" "hammer hammer"; gap: 6px;
+    margin-top: var(--fold-gap); padding: 8px;
+    background: #16110ef2; border: 0; border-top: 1px solid #4a352f; box-shadow: 0 -4px 12px rgba(0,0,0,.3);
+  }
+  #screen-game .mobile-actionbar .btn { min-height: 46px; padding: 4px 8px; font-size: 14px; }
+  #screen-game .mobile-actionbar .mab-kit { grid-area: kit; min-width: 0; color: var(--bone); }
+  #screen-game #mab-heat { grid-area: heat; }
+  #screen-game .mobile-actionbar .mab-hammer {
+    --btn-bg: linear-gradient(180deg, #e3ac4f, #9b6323 55%, #623b12);
+    grid-area: hammer; min-height: 72px; font-size: 22px; letter-spacing: .3em; gap: 12px;
+    border-color: #f3d08a; color: #1a0f05;
+    box-shadow: inset 0 3px 0 rgba(255,247,210,.5), inset 0 -5px 0 rgba(60,30,6,.45), 3px 3px 0 rgba(0,0,0,.55);
+  }
+  #screen-game .mobile-actionbar .mab-hammer::before {
+    content: ''; width: 34px; height: 34px; flex: 0 0 34px;
+    background: url('../assets/ui/hammer-forge.svg') center / contain no-repeat; image-rendering: pixelated;
+  }
+
+  /* ---- sword in hand: light up where a tap will put it ---- */
+  #screen-game.carry-anvil .anvil-stage { outline: 2px dashed rgba(255,122,60,.8); outline-offset: -6px; cursor: pointer; }
+  #screen-game.carry-anvil .stage-empty { box-shadow: 0 0 0 2px rgba(255,122,60,.55), 0 0 28px rgba(255,122,60,.25); }
+  #screen-game.carry-anvil .stage-empty span { color: var(--gold-bright); }
+  #screen-game.is-carrying .tribute-drop { outline: 2px dashed rgba(232,180,90,.75); outline-offset: -2px; cursor: pointer; }
+  #screen-game.is-carrying .rack-slot:not(.filled) { outline: 2px dashed rgba(232,180,90,.6); outline-offset: -4px; cursor: pointer; }
+
+  /* ---- tutorial card floats over the top of the anvil, clear of every target ---- */
+  .tutorial-layer .tutorial-card {
+    position: fixed; top: calc(var(--hud-h) + var(--safe-t) + 6px); bottom: auto;
+    left: calc(var(--stash-w) + var(--safe-l) + 2 * var(--fold-gap)); right: calc(var(--ledger-w) + var(--safe-r) + 2 * var(--fold-gap));
+    width: auto; max-height: 46dvh; overflow-y: auto; padding: 10px 14px;
+  }
+  .tutorial-card h4 { font-size: 16px; margin-bottom: 3px; }
+  .tutorial-card p { font-size: 12px; line-height: 1.55; }
+  .tutorial-actions { margin-top: 8px; }
+  .tutorial-actions .btn { min-height: 40px; font-size: 12px; }
+
+  /* ---- toasts: over the top of the ledger, clear of the anvil and the tutorial ---- */
+  .toast-root {
+    top: calc(var(--hud-h) + var(--safe-t) + 56px); bottom: auto; left: auto;
+    right: calc(var(--fold-gap) + var(--safe-r)); width: var(--ledger-w);
+    transform: none; align-items: stretch; pointer-events: none;
+  }
+  body[data-screen="landing"] .toast-root, body[data-screen="menu"] .toast-root { top: calc(10px + var(--safe-t)); right: auto; left: 50%; width: min(420px, 80vw); transform: translateX(-50%); }
+  .toast { min-width: 0; max-width: none; }
+
+  /* ---- contract menu: slot cards wrap instead of scrolling sideways ---- */
+  .menu-shell { padding-left: calc(16px + var(--safe-l)); padding-right: calc(16px + var(--safe-r)); }
+  .menu-header { flex-wrap: wrap; gap: 10px; }
+  .menu-logo { width: clamp(180px, 30vw, 260px); }
+  .slots-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); overflow: visible; }
+
+  /* ---- modals: bigger touch targets ---- */
+  .modal-close { width: 44px; height: 44px; flex-basis: 44px; }
+  .modal-foot .btn, .modal-body .btn { min-height: 42px; }
+  .modal-body { overscroll-behavior: contain; }
+}
+
+/* ---- unfolded and held upright: anvil on top, stash and ledger side by side below ---- */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 1180px) and (orientation: portrait) {
+  #screen-game .game-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(300px, 1.4fr) auto minmax(150px, 1fr) auto;
+    grid-template-areas:
+      "hud   hud"
+      "stage stage"
+      "stash tabs"
+      "stash ledger"
+      "stash thumbs";
+  }
+  /* The screen is wide enough to flank the anvil with the sword stats and the odds. */
+  #screen-game .anvil-stage { --flank: clamp(176px, 28cqw, 230px); margin-bottom: var(--fold-gap); }
+  #screen-game .forge-rig { width: min(calc(100cqw - 2 * var(--flank) - 16px), calc((100cqh - 96px) * 1.05), 440px); }
+  #screen-game .stat-prob-grid {
+    grid-area: stage; align-self: end; z-index: 9; pointer-events: none;
+    grid-template-columns: clamp(176px, 28vw, 230px) minmax(0, 1fr) clamp(176px, 28vw, 230px);
+    margin: 0 6px calc(var(--fold-gap) + 6px);
+  }
+  #screen-game .stat-prob-grid > * { pointer-events: auto; background: #13110dd9; }
+  #screen-game .prob-panel { grid-column: 3; align-self: end; }
+  #screen-game .controls { margin-bottom: calc(var(--fold-gap) + 6px); }
+  #screen-game .hud-tribute, #screen-game .hud-res span, #screen-game .anger-chip > span { display: none; }
+  /* A short card, buttons beside the text, so the anvil stays in view. */
+  .tutorial-layer .tutorial-card {
+    left: calc(var(--fold-gap) + var(--safe-l) + 8px); right: calc(var(--fold-gap) + var(--safe-r) + 8px); max-height: 30dvh;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; padding: 8px 12px;
+  }
+  /* The card takes the sword-name strip and a little more, and the anvil moves down to make room. */
+  #screen-game.guide-on .anvil-stage { margin-top: 60px; }
+  #screen-game.guide-on .stage-swordname, #screen-game.guide-on .stage-chips { visibility: hidden; }
+  .tutorial-layer .tutorial-card { max-height: 124px; }
+  .tutorial-card .tutorial-progress { grid-column: 1 / -1; margin-bottom: 4px; }
+  .tutorial-card h4, .tutorial-card p { grid-column: 1; }
+  .tutorial-card .tutorial-actions { grid-column: 2; grid-row: 2 / span 2; flex-direction: column-reverse; justify-content: center; align-items: stretch; margin-top: 0; gap: 6px; }
+  .toast-root { top: calc(var(--hud-h) + var(--safe-t) + 10px); right: auto; left: 50%; width: min(420px, calc(100vw - 32px)); transform: translateX(-50%); }
+  body:has(#screen-game.guide-on) .toast-root { top: calc(var(--hud-h) + var(--safe-t) + 140px); }
+}
+
+/* Narrow upright screens: the quota bar gets a row of its own. */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 719px) and (orientation: portrait) {
+  :root { --hud-h: 92px; }
+  #screen-game .hud { flex-wrap: wrap; row-gap: 4px; padding-top: calc(6px + var(--safe-t)); padding-bottom: 8px; }
+  #screen-game .hud-day { flex: 1 1 auto; }
+  #screen-game .hud-quota { order: 5; flex: 1 0 100%; }
+}
+
+/* ---- half-folded like a laptop (tabletop): watch the anvil on the upright half,
+   play on the flat half ---- */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 1180px) and (vertical-viewport-segments: 2) {
+  :root {
+    --seg-top-h: env(viewport-segment-bottom 0 0, 50dvh);
+    --hinge-h: calc(env(viewport-segment-top 0 1, 50dvh) - env(viewport-segment-bottom 0 0, 50dvh));
+  }
+  #screen-game .game-shell {
+    grid-template-columns: var(--stash-w) minmax(0, 1fr) var(--ledger-w);
+    grid-template-rows: calc(var(--hud-h) + var(--safe-t)) calc(var(--seg-top-h) - var(--hud-h) - var(--safe-t)) var(--hinge-h) auto minmax(0, 1fr);
+    grid-template-areas:
+      "hud   hud    hud"
+      "stage stage  stats"
+      ".     .      ."
+      "stash tabs   thumbs"
+      "stash ledger thumbs";
+  }
+  /* Undo the upright layout's stats-beside-the-anvil overlay. */
+  #screen-game .forge-rig { width: min(78cqw, calc((100cqh - 110px) * 1.05), 460px); }
+  #screen-game .stat-prob-grid { grid-area: stats; z-index: auto; pointer-events: auto; }
+  #screen-game .stat-prob-grid > * { background: #13110de6; }
+  #screen-game .prob-panel { grid-column: auto; align-self: stretch; }
+  #screen-game .hud { height: calc(var(--hud-h) + var(--safe-t)); flex-wrap: nowrap; }
+  #screen-game .hud-quota { order: 0; flex: 1 1 auto; }
+  #screen-game .anvil-stage { margin-bottom: var(--fold-gap); }
+  #screen-game .stat-prob-grid { align-self: stretch; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); margin: 0 0 var(--fold-gap); }
+  #screen-game .controls { margin-bottom: calc(var(--fold-gap) + 26px); }
+  #screen-game .left-panel { padding-top: var(--fold-gap); }
+  #screen-game .mobile-dock { padding-top: var(--fold-gap); }
+  #screen-game .mobile-actionbar {
+    align-self: stretch; margin: var(--fold-gap) 0 0;
+    grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "kit heat" "hammer hammer";
+  }
+  #screen-game .mobile-actionbar .mab-hammer { min-height: 0; height: 100%; flex-direction: column; font-size: 24px; }
+  #screen-game .mobile-actionbar .mab-hammer::before { width: 52px; height: 52px; flex-basis: 52px; }
+  .tutorial-layer .tutorial-card {
+    top: auto; bottom: calc(100dvh - var(--seg-top-h) + var(--fold-gap) * 2);
+    left: calc(var(--fold-gap) + var(--safe-l) + 8px); right: calc(var(--ledger-w) + var(--safe-r) + 2 * var(--fold-gap));
+    max-height: calc(var(--seg-top-h) - var(--hud-h) - 40px);
+  }
+  .toast-root { top: calc(var(--hud-h) + var(--safe-t) + 10px); right: auto; left: calc(var(--safe-l) + (100vw - var(--ledger-w) - var(--safe-l) - var(--safe-r)) / 2); width: min(380px, calc(100vw - var(--ledger-w) - 40px)); transform: translateX(-50%); }
+}
+
+/* ---- half-folded like a book, or a spanned dual-screen phone: stash and ledger
+   on the left page, the forge on the right page under the right thumb ---- */
+@media (pointer: coarse) and (min-width: 600px) and (min-height: 541px) and (max-width: 1180px) and (horizontal-viewport-segments: 2) {
+  :root {
+    --seg-left-w: env(viewport-segment-width 0 0, 50vw);
+    --hinge-w: calc(env(viewport-segment-left 1 0, 50vw) - env(viewport-segment-right 0 0, 50vw));
+  }
+  #screen-game .game-shell {
+    gap: 0;
+    padding: 0 calc(var(--fold-gap) + var(--safe-r)) max(var(--fold-gap), var(--safe-b)) calc(var(--fold-gap) + var(--safe-l));
+    grid-template-columns: calc(var(--seg-left-w) - 2 * var(--fold-gap) - var(--safe-l)) calc(var(--hinge-w) + 2 * var(--fold-gap)) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    grid-template-areas:
+      "stash  . hud"
+      "stash  . stage"
+      "tabs   . stage"
+      "ledger . stats"
+      "ledger . thumbs";
+  }
+  /* Undo the upright layout's stats-beside-the-anvil overlay. */
+  #screen-game .forge-rig { width: min(78cqw, calc((100cqh - 110px) * 1.05), 460px); }
+  #screen-game .stat-prob-grid { grid-area: stats; z-index: auto; pointer-events: auto; }
+  #screen-game .stat-prob-grid > * { background: #13110de6; }
+  #screen-game .prob-panel { grid-column: auto; align-self: stretch; }
+  #screen-game .stat-prob-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin: var(--fold-gap) 0 0; }
+  #screen-game .controls { margin-bottom: 30px; }
+  /* Codex and achievements stay reachable from the workshop menu. */
+  #screen-game .hud-actions [data-action="open-codex"], #screen-game .hud-actions [data-action="open-achievements"] { display: none; }
+  /* Neither page may grow the shared rows: each keeps to its own column. */
+  #screen-game .left-panel, #screen-game .tribute-bar, #screen-game .right-panel { contain: size; }
+  #screen-game .left-panel { padding-top: calc(var(--fold-gap) + var(--safe-t)); }
+  #screen-game .mobile-dock { padding-top: var(--fold-gap); }
+  #screen-game .hud {
+    flex-wrap: wrap; row-gap: 6px; margin: 0 calc(-1 * (var(--fold-gap) + var(--safe-r))) var(--fold-gap) calc(-1 * var(--fold-gap));
+    padding: calc(6px + var(--safe-t)) calc(10px + var(--safe-r)) 8px 12px;
+  }
+  #screen-game .hud-quota { order: 5; flex: 1 0 100%; }
+  #screen-game .hud-res span, #screen-game .anger-chip > span { display: none; }
+  #screen-game .sync-badge { display: none; }
+  .tutorial-layer .tutorial-card {
+    left: calc(var(--seg-left-w) + var(--hinge-w) + var(--fold-gap)); right: calc(var(--fold-gap) + var(--safe-r));
+    top: calc(var(--hud-h) + var(--safe-t) + 50px);
+  }
+  .toast-root { top: calc(var(--fold-gap) + var(--safe-t)); right: auto; left: calc(var(--fold-gap) + var(--safe-l)); width: calc(var(--seg-left-w) - 2 * var(--fold-gap) - var(--safe-l)); transform: none; }
+}

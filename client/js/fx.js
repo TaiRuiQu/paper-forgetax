@@ -9,6 +9,15 @@ const COLORS = {
   ghost: ['#7fd8c0', '#bff5e6', '#3d8a76'],
 };
 
+function visibleRect(selector) {
+  const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 1 || r.height < 1) return null;
+  if (r.right <= 0 || r.bottom <= 0 || r.left >= window.innerWidth || r.top >= window.innerHeight) return null;
+  return r;
+}
+
 export class FX {
   constructor(canvas) {
     this.canvas = canvas;
@@ -16,19 +25,33 @@ export class FX {
     this.particles = [];
     this.ambient = false;
     this.reduced = false;
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.resize();
-    window.addEventListener('resize', () => this.resize());
+    // Size the drawing surface from the canvas itself, not window.innerWidth/innerHeight:
+    // on phones those can disagree with the real viewport (fullscreen, rotation, an
+    // inflated layout viewport), which scaled every particle towards the top-left.
+    const resize = () => this.resize();
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    window.visualViewport?.addEventListener('resize', resize);
+    document.addEventListener('fullscreenchange', resize);
+    if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(canvas);
     this.last = performance.now();
     this._loop = this._loop.bind(this);
     requestAnimationFrame(this._loop);
   }
 
+  // Particles are positioned in viewport (client) coordinates; map them onto the canvas.
   resize() {
-    this.canvas.width = Math.floor(window.innerWidth * this.dpr);
-    this.canvas.height = Math.floor(window.innerHeight * this.dpr);
-    this.canvas.style.width = '100%';
-    this.canvas.style.height = '100%';
+    const r = this.canvas.getBoundingClientRect();
+    this.w = r.width || window.innerWidth;
+    this.h = r.height || window.innerHeight;
+    this.left = r.left;
+    this.top = r.top;
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(this.w * this.dpr));
+    const height = Math.max(1, Math.round(this.h * this.dpr));
+    if (this.canvas.width !== width) this.canvas.width = width;
+    if (this.canvas.height !== height) this.canvas.height = height;
   }
 
   setReduced(v) { this.reduced = Boolean(v); }
@@ -54,10 +77,12 @@ export class FX {
     if (this.particles.length > 600) this.particles.splice(0, this.particles.length - 600);
   }
 
-  burstAt(selector, type, opts = {}) {
-    const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
+  // Bursts from the first target that is actually on screen. Panels are hidden
+  // in the phone layouts, and a hidden element's box sits at 0,0, which piled
+  // the particles up in the top-left corner.
+  burstAt(selectors, type, opts = {}) {
+    const r = [].concat(selectors).map(visibleRect).find(Boolean);
+    if (!r) return;
     const x = r.left + r.width * (opts.x ?? 0.5);
     const y = r.top + r.height * (opts.y ?? 0.45);
     const colors = COLORS[type] || COLORS.ember;
@@ -89,7 +114,7 @@ export class FX {
   forgeImpact({ broken = false, great = false } = {}) {
     const rig = document.getElementById('forge-rig');
     const flash = document.getElementById('forge-flash');
-    if (!rig || !flash) return;
+    if (!rig || !flash || !visibleRect(rig)) return;
     const r = flash.getBoundingClientRect();
     const x = r.left + r.width / 2;
     const y = r.top + r.height / 2;
@@ -122,12 +147,15 @@ export class FX {
     const dt = Math.min(0.033, (now - this.last) / 1000);
     this.last = now;
     const ctx = this.ctx;
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    const sx = this.canvas.width / this.w;
+    const sy = this.canvas.height / this.h;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(sx, 0, 0, sy, -this.left * sx, -this.top * sy);
 
     if (this.ambient && !this.reduced && Math.random() < 0.14) {
-      const x = window.innerWidth * (0.02 + Math.random() * 0.18);
-      const y = window.innerHeight * (0.4 + Math.random() * 0.24);
+      const x = this.left + this.w * (0.02 + Math.random() * 0.18);
+      const y = this.top + this.h * (0.4 + Math.random() * 0.24);
       this.particles.push({
         x, y, vx: (Math.random() - 0.5) * 0.3, vy: -0.25 - Math.random() * 0.5,
         life: 3 + Math.random() * 2, maxLife: 5, color: Math.random() < 0.25 ? '#ffdc92' : '#ff7a3c',

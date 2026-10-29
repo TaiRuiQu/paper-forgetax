@@ -162,3 +162,21 @@ test('root and stripped subpath serve the module graph, assets and API', async t
     assert.equal(login.status, 200);
   }
 });
+
+test('layout media queries in CSS match the ones the controller uses', () => {
+  const device = fs.readFileSync(new URL('../client/js/device.js', import.meta.url), 'utf8');
+  const query = name => device.match(new RegExp(`${name} = '([^']+)'`))[1];
+  const css = file => fs.readFileSync(new URL(`../client/css/${file}`, import.meta.url), 'utf8');
+  const portrait = query('PORTRAIT_COMPACT_QUERY');
+  for (const file of ['style.css', 'workshop.css']) {
+    const blocks = css(file).match(/@media [^{]*max-width: 800px[^{]*\{/g).filter(m => !m.includes('min-width'));
+    assert.ok(blocks.length > 0, file);
+    for (const block of blocks) assert.equal(block, `@media ${portrait} {`, `${file}: ${block}`);
+  }
+  assert.ok(css('mobile.css').includes(`@media ${query('LANDSCAPE_COMPACT_QUERY')} {`));
+  const fold = query('FOLD_QUERY');
+  const foldBlocks = css('fold.css').match(/@media [^{]+\{/g);
+  assert.ok(foldBlocks.length >= 4);
+  for (const block of foldBlocks) assert.ok(block.startsWith(`@media ${fold.replace('(max-width: 1180px)', '')}`), block);
+  assert.ok(fs.readFileSync(new URL('../client/index.html', import.meta.url), 'utf8').includes('href="./css/fold.css"'));
+});

@@ -983,7 +983,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 .sword-context .ctx-actions { display: flex; gap: 3px; flex-wrap: wrap; }
 .sword-context .mini-btn { font-size: 9px; padding: 2px 6px; }
 
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   .menu-shell { padding: 14px 16px 24px; overflow-y: auto; }
   .menu-header { align-items: center; }
   .menu-logo { width: 210px; }
@@ -1017,7 +1017,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 
 /* ---------------- mobile game dock ---------------- */
 .mobile-dock { display: none; }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   #screen-game { position: fixed; inset: 0; height: 100vh; overflow: hidden; }
   .game-shell { height: 100%; min-height: 0; display: flex; flex-direction: column; }
   .hud {
@@ -1100,7 +1100,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 
 /* mobile sticky anvil controls */
 .mobile-actionbar { display: none; }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   .mobile-actionbar {
     display: flex; position: absolute; left: 0; right: 0; bottom: 54px; z-index: 40;
     height: 56px; align-items: center; gap: 6px; padding: 6px 8px;
@@ -1117,7 +1117,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
   .tutorial-layer .tutorial-card { bottom: 118px; }
 }
 
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   .hud-res { padding-left: 0; gap: 7px; }
   .res-chip { background: rgba(10,8,13,.55); border: 1px solid #33262f; padding: 2px 6px; }
   .res-chip > div { flex-direction: row; align-items: baseline; gap: 4px; }
@@ -1146,7 +1146,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 .cal-warn-row .anger-display { display: inline-flex; }
 .cal-warn-row b { color: var(--red); }
 .cal-warning p { font-size: 10px; color: var(--muted); margin-top: 3px; }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   #screen-game.mobile-tab-tribute .workshop { position: relative; }
   #screen-game.mobile-tab-tribute .workshop::before {
     content: '';
@@ -1161,7 +1161,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 
 body.modal-open .toast-root { z-index: 110; }
 body.modal-open .toast { opacity: .001; }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   .mobile-actionbar .btn { padding: 5px 8px; }
   .mobile-actionbar .mab-kit { min-width: 46px; padding: 5px 6px; color: var(--bone); }
   .kit-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 9px; align-items: center; padding: 8px; border: 1px solid #352a34; background: rgba(10,8,13,.45); margin-bottom: 6px; }
@@ -1178,7 +1178,7 @@ body.modal-open .toast { opacity: .001; }
 .family-stages { height: 68px; background: radial-gradient(ellipse at 50% 55%, #2a2130, #0a080d 75%); }
 .family-stages img { width: 16.2%; max-height: 62px; object-fit: contain; }
 .family-stages img.discovered { filter: brightness(1.22) drop-shadow(0 0 3px rgba(255,220,150,.18)); }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   .family-grid { grid-template-columns: 1fr; }
   .family-stages { height: 84px; }
   .family-stages img { width: 16.2%; max-height: 78px; }
@@ -1194,6 +1194,6 @@ body.modal-open .toast { opacity: .001; }
   filter: brightness(1.18) drop-shadow(0 0 2px rgba(255, 235, 200, .12));
 }
 body[data-screen="landing"] .toast-root, body[data-screen="menu"] .toast-root { top: 18px; }
-@media (max-width: 800px) and (min-height: 541px), (max-width: 800px) and (orientation: portrait) {
+@media (max-width: 599px) and (min-height: 541px), (max-width: 599px) and (orientation: portrait), (max-width: 800px) and (min-height: 541px) and (pointer: fine), (max-width: 800px) and (orientation: portrait) and (pointer: fine) {
   body[data-screen="landing"] .toast-root, body[data-screen="menu"] .toast-root { top: 10px; }
 }

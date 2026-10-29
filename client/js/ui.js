@@ -8,7 +8,7 @@ import {
 } from './helpers.js';
 
 import { tutorialObjective } from '../shared/engine/tutorial.js';
-import { isCompact, isTouchDevice } from './device.js';
+import { isCompact, isFold, isTouchDevice } from './device.js';
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -32,7 +32,9 @@ export function applyMobileTab(app) {
   const screen = document.getElementById('screen-game');
   if (!screen) return;
   const tabs = ['forge', 'inventory', 'shop', 'tribute'];
-  const tab = tabs.includes(app.mobileTab) ? app.mobileTab : 'forge';
+  let tab = tabs.includes(app.mobileTab) ? app.mobileTab : 'forge';
+  // The fold layout always shows the anvil and stash; its tabs only switch the ledger panel.
+  if (isFold()) tab = tab === 'shop' ? 'shop' : 'tribute';
   for (const t of tabs) screen.classList.toggle('mobile-tab-' + t, t === tab);
   document.querySelectorAll('.mobile-dock-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
   const badge = document.getElementById('dock-tribute-count');
@@ -170,12 +172,30 @@ export function renderSwordContext(app) {
   el.innerHTML = `<span class="ctx-name">${name} <em>+${sw.level}</em></span><span class="ctx-actions">${buttons}</span>`;
 }
 
+// Fold layout: a selected sword off the anvil is held, and the places it can
+// be tapped into light up.
+function renderCarry(app, anvilEmpty) {
+  const s = app.state;
+  const sw = isFold() && app.selectedSwordId ? E.getSword(s, app.selectedSwordId) : null;
+  const held = sw && (sw.location === 'floor' || sw.location === 'rack') ? sw : null;
+  const screen = $('#screen-game');
+  screen.classList.toggle('is-carrying', Boolean(held));
+  screen.classList.toggle('carry-anvil', Boolean(held && anvilEmpty && !held.remnant));
+  const hint = $('#stage-empty span');
+  if (hint) {
+    hint.textContent = held && !held.remnant
+      ? `点按铁砧，放上「${E.swordDisplayName(held)}」`
+      : isFold() ? '选中库存里的一把剑，再点按这里' : '从库存把一把剑拖到这里，或点击剑卡片上的「上砧」';
+  }
+}
+
 export function renderCenter(app) {
   const s = app.state;
   const sw = E.getAnvilSword(s);
   const stage = $('#anvil-stage');
   const empty = !sw;
   $('#stage-empty').classList.toggle('hidden', !empty);
+  renderCarry(app, empty);
   const swordEl = $('#anvil-sword');
   swordEl.style.opacity = sw ? '1' : '0';
   swordEl.draggable = Boolean(sw);
