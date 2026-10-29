@@ -394,6 +394,48 @@ test('buying out a merchant grants the hidden achievement', () => {
   assert.ok(state.unlockedAchievements.includes('take_everything'));
 });
 
+test('merchant purchases record swords and consumables in their own codex buckets', () => {
+  const state = fresh(27);
+  state.gold = 1_000_000_000;
+  E.setupDay(state, 6);
+  state.codex.consumables = {};
+  state.codex.merchant = {};
+  for (const [index, item] of state.merchant.items.entries()) {
+    assert.equal(E.buyMerchantItem(state, index).ok, true);
+    const key = item.kind === 'sword' ? `${item.sub}-sword` : item.key;
+    assert.equal(state.codex.merchant[key], true);
+    if (item.kind === 'consumable') assert.equal(state.codex.consumables[key], true);
+  }
+  assert.deepEqual(Object.keys(state.codex.consumables).sort(), state.merchant.items
+    .filter(item => item.kind === 'consumable').map(item => item.key).sort());
+  assert.equal(Object.hasOwn(state.codex.merchant, 'undefined'), false);
+});
+
+test('loading and merging old codex progress removes undefined entries without losing discoveries', () => {
+  const state = fresh(27);
+  state.codex.consumables = { undefined: true, regret_clockwork: true };
+  state.codex.merchant = { undefined: true, 'base-sword': true };
+  const expected = structuredClone(state.codex);
+  delete expected.consumables.undefined;
+  delete expected.merchant.undefined;
+  assert.deepEqual(E.hydrateState(E.prepareSave(state)).codex, expected);
+  const profile = E.emptyProfile();
+  profile.codex = structuredClone(state.codex);
+  assert.deepEqual(E.mergeProfile(profile).codex, expected);
+  assert.deepEqual(E.mergeCodex(E.emptyProfile().codex, state.codex), expected);
+  assert.deepEqual(E.mergeCodex(structuredClone(state.codex), state.codex), expected);
+});
+
+test('codex recorders ignore missing and unknown item keys', () => {
+  const state = fresh(27);
+  const before = structuredClone(state.codex);
+  for (const key of [undefined, null, '', 'undefined', 'unknown-item', 'constructor']) {
+    E.markSeenConsumable(state, key);
+    E.markSeenMerchantItem(state, key);
+  }
+  assert.deepEqual(state.codex, before);
+});
+
 test('incense is only sold when angry and lowers anger once', () => {
   const state = fresh(28);
   state.day = 9;

@@ -375,7 +375,7 @@ async function boot() {
     if (Api.getToken()) {
       const data = await Api.me();
       app.user = data.user;
-      app.profile = data.profile;
+      app.profile = E.mergeProfile(data.profile);
       await refreshSaves();
       setSync('saved');
       showMenu();
@@ -416,7 +416,7 @@ async function handleAuthSubmit(e) {
   try {
     const data = mode === 'register' ? await Api.register(username, password) : await Api.login(username, password);
     app.user = data.user;
-    app.profile = data.profile;
+    app.profile = E.mergeProfile(data.profile);
     await refreshSaves();
     setSync('saved');
     app.audio.ensure();

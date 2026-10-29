@@ -61,19 +61,22 @@ export function emptyProfile() {
 }
 
 export function mergeCodex(target, source) {
-  if (!source) return target;
   const t = target || { relics: {}, consumables: {}, merchant: {}, swords: {}, routes: {} };
   const unsafe = new Set(['__proto__', 'constructor', 'prototype']);
   for (const bucket of ['relics', 'consumables', 'merchant', 'swords']) {
     t[bucket] = t[bucket] || {};
-    for (const [k, v] of Object.entries(source[bucket] || {})) {
+    // Older merchant purchases recorded swords under a missing consumable key.
+    const itemBucket = bucket === 'consumables' || bucket === 'merchant';
+    if (itemBucket) delete t[bucket].undefined;
+    for (const [k, v] of Object.entries(source?.[bucket] || {})) {
       if (unsafe.has(k) || k.length > 80) continue;
+      if (itemBucket && k === 'undefined') continue;
       if (typeof v === 'number') t[bucket][k] = Math.max(t[bucket][k] || 0, v);
       else if (v) t[bucket][k] = true;
     }
   }
   t.routes = t.routes || {};
-  for (const [k, v] of Object.entries(source.routes || {})) {
+  for (const [k, v] of Object.entries(source?.routes || {})) {
     if (unsafe.has(k) || k.length > 40) continue;
     t.routes[k] = Math.max(t.routes[k] || 0, Number(v) || 0);
   }
@@ -448,9 +451,11 @@ export function markSeenRelic(state, id) {
   state.codex.relics[id] = true;
 }
 export function markSeenConsumable(state, id) {
+  if (!Object.hasOwn(CONSUMABLES, id)) return;
   state.codex.consumables[id] = true;
 }
 export function markSeenMerchantItem(state, id) {
+  if (id !== 'base-sword' && id !== 'special-sword' && !Object.hasOwn(CONSUMABLES, id)) return;
   state.codex.merchant[id] = true;
 }
 
@@ -1437,6 +1442,7 @@ export function buyMerchantItem(state, index) {
       route: item.family ? null : randomInt(state, 3),
     });
     addLog(state, `商人卖出了一把 ${swordDisplayName(s)}。`, 'merchant');
+    markSeenMerchantItem(state, `${item.sub}-sword`);
   } else {
     const c = CONSUMABLES[item.key];
     if (item.key === 'incense_of_oblivion') {
@@ -1448,12 +1454,11 @@ export function buyMerchantItem(state, index) {
       addLog(state, '幽灵送货单：明日供给额外 +2 把剑。', 'merchant');
     } else {
       state.consumables[item.key] = (state.consumables[item.key] || 0) + 1;
-      markSeenConsumable(state, item.key);
       addLog(state, `购入 ${c.zh}。`, 'merchant');
     }
+    markSeenConsumable(state, item.key);
+    markSeenMerchantItem(state, item.key);
   }
-  markSeenConsumable(state, item.key);
-  markSeenMerchantItem(state, item.key);
   const soldOut = state.merchant.items.every(i => i.stock <= 0);
   if (soldOut) {
     grantAchievement(state, 'take_everything');
@@ -1638,7 +1643,7 @@ export function hydrateState(raw) {
   s.consumables = { cracked_dragon_scale: 0, regret_clockwork: 0, red_chalk: 0, powder_pouch: 0, cold_star_shard: 0, ...(s.consumables || {}) };
   s.startingChoices = s.startingChoices || [];
   s.unlockedAchievements = s.unlockedAchievements || [];
-  s.codex = s.codex || { relics: {}, consumables: {}, merchant: {}, swords: {}, routes: {} };
+  s.codex = mergeCodex(s.codex);
   s.pending = { supplyExtra: 0, supplyMinLevel: 0, inheritLevels: 0, inheritCharge: 0, hungrySigns: 0, smithLevels: 0, ...(s.pending || {}) };
   return s;
 }
