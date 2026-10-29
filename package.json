@@ -1,0 +1,21 @@
+{
+  "name": "forgetax-2d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A 2D pixel-art remake of ForgeTax with a separated Node.js/SQLite backend and cloud saves.",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node scripts/dev.mjs",
+    "server": "node server/src/index.js",
+    "web": "node server/static.js",
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/api.test.js",
+    "test:engine": "node --test tests/engine.test.js",
+    "test:api": "node --test tests/api.test.js",
+    "assets": "node scripts/generate-swords.mjs && node scripts/generate-scene.mjs && node scripts/generate-relic-icons.mjs",
+    "test:rules": "node --test tests/rules-extra.test.js"
+  }
+}
