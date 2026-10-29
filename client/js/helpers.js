@@ -1,9 +1,9 @@
-import * as E from '/shared/engine/engine.js';
-import { RELIC_BY_ID, RELICS } from '/shared/data/relics.js';
+import * as E from '../shared/engine/engine.js';
+import { RELIC_BY_ID, RELICS } from '../shared/data/relics.js';
 import {
   SWORD_FAMILIES, RARITIES, ACHIEVEMENT_BY_ID, ACHIEVEMENTS, CONSUMABLES,
   SWORD_STAGE_LEVELS, FAMILY_ORDER, TUTORIAL_STEPS, RELIC_SLOTS,
-} from '/shared/data/gameData.js';
+} from '../shared/data/gameData.js';
 
 export { E, RELIC_BY_ID, RELICS, SWORD_FAMILIES, RARITIES, ACHIEVEMENTS, ACHIEVEMENT_BY_ID, CONSUMABLES, SWORD_STAGE_LEVELS, FAMILY_ORDER, TUTORIAL_STEPS, RELIC_SLOTS };
 
@@ -43,10 +43,10 @@ export function swordTip(app, s) {
     <div class="tt-meta">价值 <b>${fmt(E.swordValue(state, s))} G</b> · 充能 ${s.charge}/10 · ${s.heat ? '已加热' : '未加热'}</div>`;
 }
 
-export function relicIcon(id) { return `/assets/relics/${id}.svg`; }
-export function consumableIcon(key) { return `/assets/consumables/${key}.svg`; }
-export function achievementIcon(id) { return `/assets/achievements/${id}.svg`; }
-export function swordArtPath(s) { return `/assets/swords/${E.swordArtKey(s)}.svg`; }
+export function relicIcon(id) { return `./assets/relics/${id}.svg`; }
+export function consumableIcon(key) { return `./assets/consumables/${key}.svg`; }
+export function achievementIcon(id) { return `./assets/achievements/${id}.svg`; }
+export function swordArtPath(s) { return `./assets/swords/${E.swordArtKey(s)}.svg`; }
 
 export function rarityOf(id) { return RELIC_BY_ID[id]?.rarity || 'common'; }
 export function rarityZh(id) { return RARITIES[rarityOf(id)].zh; }

@@ -7,7 +7,7 @@ import {
   consumeDisabledReason, tutorialTarget,
 } from './helpers.js';
 
-import { tutorialObjective } from '/shared/engine/tutorial.js';
+import { tutorialObjective } from '../shared/engine/tutorial.js';
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -62,7 +62,7 @@ export function renderHUD(app) {
   const angerEl = $('#hud-anger');
   angerEl.innerHTML = [0, 1, 2].map(i => `<i class="${i < s.anger ? (s.anger >= 3 ? 'lit critical' : 'lit') : ''}"></i>`).join('');
   const dragon = $('#dragon-face img');
-  dragon.src = `/assets/ui/dragon_${s.anger >= 3 ? 'rage' : s.anger > 0 ? 'warn' : 'calm'}.svg`;
+  dragon.src = `./assets/ui/dragon_${s.anger >= 3 ? 'rage' : s.anger > 0 ? 'warn' : 'calm'}.svg`;
   renderSyncBadge(app);
 }
 
@@ -92,7 +92,7 @@ export function renderLeft(app) {
   else if (E.hasRelic(s, 'lifetime-contract')) { heatLabel = '终身契约：无需加热'; heatDisabled = true; }
   else { heatDisabled = false; }
   heatBtn.disabled = heatDisabled;
-  heatBtn.innerHTML = `<img src="/assets/ui/heat.svg" alt="">${heatLabel}`;
+  heatBtn.innerHTML = `<img src="./assets/ui/heat.svg" alt="">${heatLabel}`;
   $('#forge-hint').textContent = E.hasRelic(s, 'lifetime-contract') ? '终身契约已免除加热' : (sword?.heat ? '可以挥锤了' : '加热后才能锻造');
 
   // inventory
@@ -236,8 +236,8 @@ function stageChips(app, sw) {
     chips.push(`<span class="chip gold">残骸贡品</span>`);
     return chips.join('');
   }
-  if (sw.heat || E.hasRelic(s, 'lifetime-contract')) chips.push(`<span class="chip hot"><img src="/assets/ui/flame.svg" alt="">已加热</span>`);
-  if (sw.charge >= 10) chips.push(`<span class="chip gold"><img src="/assets/ui/charge.svg" alt="">入神就绪</span>`);
+  if (sw.heat || E.hasRelic(s, 'lifetime-contract')) chips.push(`<span class="chip hot"><img src="./assets/ui/flame.svg" alt="">已加热</span>`);
+  if (sw.charge >= 10) chips.push(`<span class="chip gold"><img src="./assets/ui/charge.svg" alt="">入神就绪</span>`);
   if (E.hasRelic(s, 'phoenix-ash') && !sw.protections.phoenixUsed) chips.push(`<span class="chip">凤凰之灰可用</span>`);
   if (E.hasRelic(s, 'unyielding-cornerstone') && !sw.protections.cornerstoneUsed) chips.push(`<span class="chip">基石可挡一次碎</span>`);
   if (E.hasRelic(s, 'giants-spine') && sw.protections.spineCharges > 0) chips.push(`<span class="chip good">脊骨已蓄</span>`);
@@ -362,7 +362,7 @@ export function renderRight(app) {
   $$('.right-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === app.rightTab));
   const merchantBanner = s.merchant
     ? `<div class="merchant-banner" data-action="open-merchant">
-        <img src="/assets/scene/merchant.svg" alt="">
+        <img src="./assets/scene/merchant.svg" alt="">
         <div><strong>幽灵商人来访</strong><span>第 ${s.day} 天 · 用金币交易 · 摊位还亮着</span></div>
         <span class="arrow">查看 →</span>
       </div>`
@@ -373,7 +373,7 @@ export function renderRight(app) {
   }
   if (s.day < 2) {
     content.innerHTML = `${merchantBanner}<div class="shop-empty">
-      <img src="/assets/scene/vending.svg" alt="">
+      <img src="./assets/scene/vending.svg" alt="">
       <div>遗物商亭 <b>第 2 天</b>开门。</div>
       <div style="font-size:9px;color:var(--muted-2);margin-top:4px">开局的三件免费遗物已经选过了。<br>明天开始，用剑币购买新的遗物。</div>
     </div>`;
@@ -398,7 +398,7 @@ export function renderRight(app) {
         <div class="shop-desc">${esc(r.desc)}</div>
       </div>
       <div class="shop-buy">
-        <span class="shop-price"><img src="/assets/ui/swordcoin.svg" alt="">${item.price}</span>
+        <span class="shop-price"><img src="./assets/ui/swordcoin.svg" alt="">${item.price}</span>
         <button class="btn btn-primary btn-small" data-action="buy-relic" data-index="${i}" ${sold || cannotCoins ? 'disabled' : ''} title="${slotsFull ? '遗物架已满：点击后可先丢弃一件' : (reason || '购买')}">${sold ? '已售' : slotsFull ? '换遗物' : '购买'}</button>
       </div>
     </div>`;
@@ -407,11 +407,11 @@ export function renderRight(app) {
   const cost = E.rerollCost(s);
   const canReroll = free || s.gold >= cost;
   const reroll = `<div class="reroll-row">
-    <span class="reroll-cost">${free ? '<span style="color:var(--gold)">磨旧的兑换券：本次免费</span>' : `<img src="/assets/ui/gold.svg" alt="">${fmt(cost)} G · 已刷 ${s.shop.paidRerolls} 次`}</span>
+    <span class="reroll-cost">${free ? '<span style="color:var(--gold)">磨旧的兑换券：本次免费</span>' : `<img src="./assets/ui/gold.svg" alt="">${fmt(cost)} G · 已刷 ${s.shop.paidRerolls} 次`}</span>
     <button class="btn btn-ghost btn-small" data-action="reroll-shop" ${canReroll ? '' : 'disabled'}>刷新商亭</button>
   </div>`;
   content.innerHTML = `${merchantBanner}
-    <div class="shop-head"><span class="shop-title">遗物商亭 <span class="shop-sub">第 ${s.day} 天</span></span><span class="coin-count"><img src="/assets/ui/swordcoin.svg" alt="">${s.coins}</span></div>
+    <div class="shop-head"><span class="shop-title">遗物商亭 <span class="shop-sub">第 ${s.day} 天</span></span><span class="coin-count"><img src="./assets/ui/swordcoin.svg" alt="">${s.coins}</span></div>
     <div class="shop-list">${list || '<div class="shop-empty">今天没有可出售的遗物。</div>'}</div>
     ${reroll}
     <div class="relic-tab-note">遗物槽 <b>${s.relics.length}/${RELIC_SLOTS}</b>。满槽时先丢弃旧遗物；丢弃没有退款。${slotsFull ? '<br><span style="color:#e05a4f">遗物架已满，购买前请先丢弃。</span>' : ''}</div>`;
@@ -560,13 +560,13 @@ export function renderMenu(app) {
     const meta = save.meta || {};
     const phase = st.phase || meta.phase || 'playing';
     const sw = bestSword(st);
-    const art = sw ? swordArtPath(sw) : '/assets/swords/citadel_s0.svg';
+    const art = sw ? swordArtPath(sw) : './assets/swords/citadel_s0.svg';
     const phaseClass = phase === 'dead' ? 'dead' : phase === 'victory' ? 'victory' : '';
     const stateLabel = phase === 'dead' ? '已阵亡' : phase === 'victory' ? '契约完成' : phase === 'select' ? '待开局' : '进行中';
     const kindLabel = save.saveKind || '';
     html += `<div class="slot-card ${phaseClass}" data-slot="${slot}">
       <div class="slot-scene">
-        <img src="/assets/scene/${phase === 'dead' ? 'dragon_rage' : phase === 'victory' ? 'dragon_calm' : 'background'}.svg" alt="">
+        <img src="./assets/scene/${phase === 'dead' ? 'dragon_rage' : phase === 'victory' ? 'dragon_calm' : 'background'}.svg" alt="">
         <div class="slot-day"><strong>第 ${meta.day || st.day || '—'} 天</strong><span>${esc(meta.date || '')}</span></div>
       </div>
       <div class="slot-top">

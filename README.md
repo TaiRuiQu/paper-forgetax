@@ -43,9 +43,25 @@ PORT=3001
 WEB_PORT=5173
 ```
 
-`PORT` 为 API 端口，`WEB_PORT` 为前端端口，两者独立配置。前端自动使用当前访问主机和配置的 API 端口。若从其它主机访问，请设置 `HOST=0.0.0.0`，通过服务器的实际 IP 访问前端；也可通过 `?api=http://<host>:<port>/api` 手动指定 API 地址（界面会记住该地址，优先使用）。
+`PORT` 为 API 端口，`WEB_PORT` 为前端端口，两者独立配置。前端默认访问游戏所在路径下的 `api`，由静态服务器转发到配置的 API 端口。若从其它主机访问，请设置 `HOST=0.0.0.0`，通过服务器的实际 IP 访问前端；也可通过 `?api=http://<host>:<port>/api` 手动指定 API 地址（界面按游戏地址记住该配置，优先使用）。
 
 可选环境变量还有 `FORGETAX_DATA_DIR`（数据目录）、`FORGETAX_DB`（数据库文件）、`FORGETAX_SECRET_FILE`（签名密钥文件）和 `FORGETAX_SECRET`（直接指定签名密钥）。相对路径以启动时的工作目录为基准，跨目录启动时建议使用绝对路径。`.env` 已被 Git 忽略，请勿提交真实密钥；可提交的配置模板见 `.env.example`。
+
+### Caddy 子路径部署
+
+页面、样式、动态素材与模块引用均使用相对路径，可部署在 `/` 或 `/forgetax/` 等目录下。目录访问需要末尾斜杠。Caddy 与游戏在同一台主机时，使用 [deploy/Caddyfile](deploy/Caddyfile)：
+
+```caddyfile
+games.paperagent.work {
+    encode zstd gzip
+    redir /forgetax /forgetax/?{query} 308
+    handle_path /forgetax/* {
+        reverse_proxy 127.0.0.1:5173
+    }
+}
+```
+
+启动游戏后访问 `https://games.paperagent.work/forgetax/`，无需额外代理域名根目录的资源，也无需指定 `?api=`。前端及 API 通过同一个 HTTPS 入口访问；`5173` 应与 `.env` 的 `WEB_PORT` 一致。原有域名配置中已有站点块时，将这些规则合并到现有块中。
 
 ## 操作
 
@@ -127,10 +143,10 @@ tests/                    引擎、内容、API 集成测试
 ```bash
 npm test
 # 等价于
-node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js
+node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js tests/deployment.test.js
 ```
 
-当前 **71 项测试全部通过**，覆盖：
+当前 **73 项测试全部通过**，覆盖：
 
 - 剑值曲线（+0 320 G → +20 1,064,082 G）、大成功 +8→+10 的 20,503 G 示例；
 - 等级破碎曲线、1,000 格归一、相对减碎的乘算语义；
@@ -142,6 +158,7 @@ node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js
 - 所有素材文件、19 成就、16 个解锁映射、8 个初始遗物、九剑系图标；
 - 完整 21 天逐日模拟通关、商店满槽换遗物、全部遗物 x 5 结果冒烟、剑架/贡台/溢出队列、收藏家钩子、继承与供给加成；
 - 注册/登录/令牌篡改、双用户隔离、存档元数据、档案单调合并、SQLite 重启后持久化。
+- 根路径与子路径部署下的资源、模块与 API 转发，以及按游戏地址隔离的 API 配置。
 
 素材与内容测试还会验证 94 个图标、54 个剑阶、场景与 UI 素材、字体是否齐全。
 

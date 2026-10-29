@@ -1,0 +1,9 @@
+games.paperagent.work {
+    encode zstd gzip
+
+    redir /forgetax /forgetax/?{query} 308
+
+    handle_path /forgetax/* {
+        reverse_proxy 127.0.0.1:5173
+    }
+}

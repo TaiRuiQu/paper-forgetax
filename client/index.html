@@ -5,23 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b090e">
   <title>FORGE TAX · 2D 锻剑还债</title>
-  <link rel="icon" href="/assets/ui/anvil.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/workshop.css">
+  <link rel="icon" href="./assets/ui/anvil.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/workshop.css">
 </head>
 <body>
   <div id="boot" class="boot-screen">
-    <div class="boot-mark"><img src="/assets/ui/anvil.svg" alt=""></div>
+    <div class="boot-mark"><img src="./assets/ui/anvil.svg" alt=""></div>
     <div class="boot-title">FORGE TAX</div>
     <div class="boot-text">正在点燃炉火<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
   </div>
 
   <div id="app">
     <section id="screen-landing" class="screen hidden">
-      <div class="landing-bg"><img src="/assets/scene/workshop-pixel.webp" alt=""></div>
+      <div class="landing-bg"><img src="./assets/scene/workshop-pixel.webp" alt=""></div>
       <div class="landing-vignette"></div>
       <div class="landing-wrap">
-        <img class="landing-title" src="/assets/scene/title.svg" alt="FORGE TAX">
+        <img class="landing-title" src="./assets/scene/title.svg" alt="FORGE TAX">
         <p class="tagline">铸一柄好剑，喂一条饿龙。</p>
         <div class="auth-panel pixel-panel">
           <div class="auth-tabs" role="tablist">
@@ -45,7 +45,7 @@
             <p class="form-error" id="auth-error"></p>
           </form>
           <div class="cloud-note">
-            <img src="/assets/ui/calendar.svg" alt="">
+            <img src="./assets/ui/calendar.svg" alt="">
             <span>云端存档 · 三份契约 · 图鉴与成就跨存档共享</span>
           </div>
         </div>
@@ -55,18 +55,18 @@
     </section>
 
     <section id="screen-menu" class="screen hidden">
-      <div class="menu-bg"><img src="/assets/scene/workshop-pixel.webp" alt=""></div>
+      <div class="menu-bg"><img src="./assets/scene/workshop-pixel.webp" alt=""></div>
       <div class="landing-vignette"></div>
       <div class="menu-shell">
         <header class="menu-header">
-          <img class="menu-logo" src="/assets/scene/title.svg" alt="FORGE TAX">
+          <img class="menu-logo" src="./assets/scene/title.svg" alt="FORGE TAX">
           <div class="user-area">
             <div class="user-chip">
               <span class="user-label">铁匠</span>
               <strong id="menu-username">—</strong>
             </div>
-            <button class="icon-btn" data-action="open-settings" title="设置"><img src="/assets/ui/settings.svg" alt="设置"></button>
-            <button class="icon-btn" data-action="logout" title="退出登录"><img src="/assets/ui/logout.svg" alt="退出"></button>
+            <button class="icon-btn" data-action="open-settings" title="设置"><img src="./assets/ui/settings.svg" alt="设置"></button>
+            <button class="icon-btn" data-action="logout" title="退出登录"><img src="./assets/ui/logout.svg" alt="退出"></button>
           </div>
         </header>
         <div class="menu-content">
@@ -80,10 +80,10 @@
             <div class="side-heading">档案</div>
             <div id="profile-summary" class="profile-summary"></div>
             <div class="menu-actions">
-              <button class="btn btn-ghost" data-action="open-codex"><img src="/assets/ui/codex.svg" alt="">图鉴</button>
-              <button class="btn btn-ghost" data-action="open-achievements"><img src="/assets/ui/trophy.svg" alt="">成就</button>
-              <button class="btn btn-ghost" data-action="open-howto"><img src="/assets/ui/hammer.svg" alt="">玩法</button>
-              <button class="btn btn-ghost" data-action="open-settings"><img src="/assets/ui/settings.svg" alt="">设置</button>
+              <button class="btn btn-ghost" data-action="open-codex"><img src="./assets/ui/codex.svg" alt="">图鉴</button>
+              <button class="btn btn-ghost" data-action="open-achievements"><img src="./assets/ui/trophy.svg" alt="">成就</button>
+              <button class="btn btn-ghost" data-action="open-howto"><img src="./assets/ui/hammer.svg" alt="">玩法</button>
+              <button class="btn btn-ghost" data-action="open-settings"><img src="./assets/ui/settings.svg" alt="">设置</button>
             </div>
             <div class="menu-quote">
               <span class="quote-mark">“</span>
@@ -97,12 +97,12 @@
     </section>
 
     <section id="screen-game" class="screen hidden">
-      <div class="game-bg"><img src="/assets/scene/background.svg" alt=""></div>
+      <div class="game-bg"><img src="./assets/scene/background.svg" alt=""></div>
       <div class="game-bg-tint"></div>
       <div class="game-shell">
         <header id="hud" class="hud">
           <div class="hud-day">
-            <div class="dragon-face" id="dragon-face"><img src="/assets/ui/dragon_calm.svg" alt="巨龙"></div>
+            <div class="dragon-face" id="dragon-face"><img src="./assets/ui/dragon_calm.svg" alt="巨龙"></div>
             <div class="hud-day-text">
               <div class="hud-line"><span class="hud-kicker">契约</span><b id="hud-day">第 1 天</b><span id="hud-date" class="muted">4月15日</span></div>
               <div class="hud-line small"><span id="hud-phase">契约进行中</span><span class="dot-sep">·</span><button class="link-btn" data-action="open-calendar">查看日历</button></div>
@@ -118,10 +118,10 @@
           </div>
           <div class="hud-res">
             <div class="res-chip" title="金币：购买商人物品、刷新遗物商店">
-              <img src="/assets/ui/gold.svg" alt=""><div><span>金币</span><b id="hud-gold">0</b></div>
+              <img src="./assets/ui/gold.svg" alt=""><div><span>金币</span><b id="hud-gold">0</b></div>
             </div>
             <div class="res-chip" title="剑币：把剑投入售卖机获得，用于购买遗物">
-              <img src="/assets/ui/swordcoin.svg" alt=""><div><span>剑币</span><b id="hud-coins">0</b></div>
+              <img src="./assets/ui/swordcoin.svg" alt=""><div><span>剑币</span><b id="hud-coins">0</b></div>
             </div>
             <div class="anger-chip" title="巨龙怒气：第三档即死亡">
               <span>巨龙怒气</span>
@@ -132,9 +132,9 @@
           </div>
           <div class="hud-actions">
             <span class="sync-badge" id="sync-badge"><i></i><span>云端</span></span>
-            <button class="icon-btn" data-action="open-codex" title="图鉴"><img src="/assets/ui/codex.svg" alt=""></button>
-            <button class="icon-btn" data-action="open-achievements" title="成就"><img src="/assets/ui/trophy.svg" alt=""></button>
-            <button class="icon-btn" data-action="open-menu" title="菜单 (Esc)"><img src="/assets/ui/settings.svg" alt=""></button>
+            <button class="icon-btn" data-action="open-codex" title="图鉴"><img src="./assets/ui/codex.svg" alt=""></button>
+            <button class="icon-btn" data-action="open-achievements" title="成就"><img src="./assets/ui/trophy.svg" alt=""></button>
+            <button class="icon-btn" data-action="open-menu" title="菜单 (Esc)"><img src="./assets/ui/settings.svg" alt=""></button>
           </div>
         </header>
 
@@ -143,12 +143,12 @@
             <div class="forge-card panel-cut" id="forge-card">
               <div class="panel-title compact"><span>炉火</span><span class="hint" id="forge-hint">加热后才能锻造</span></div>
               <div class="forge-art">
-                <img src="/assets/scene/forge.svg" alt="炉火">
+                <img src="./assets/scene/forge.svg" alt="炉火">
                 <div class="heat-glow" id="heat-glow"></div>
                 <span class="heat-badge" id="heat-badge">待加热</span>
               </div>
               <div class="forge-actions" data-tutorial="heat">
-                <button class="btn btn-ember btn-wide" data-action="heat" id="btn-heat"><img src="/assets/ui/heat.svg" alt="">加热铁砧上的剑</button>
+                <button class="btn btn-ember btn-wide" data-action="heat" id="btn-heat"><img src="./assets/ui/heat.svg" alt="">加热铁砧上的剑</button>
               </div>
             </div>
 
@@ -170,10 +170,10 @@
 
           <section class="center-panel">
             <div class="anvil-stage panel-cut" id="anvil-stage">
-              <img class="stage-bg-art" src="/assets/scene/background.svg" alt="">
+              <img class="stage-bg-art" src="./assets/scene/background.svg" alt="">
               <div class="stage-tint"></div>
               <div class="frenzy-layer" id="frenzy-layer">
-                <img src="/assets/scene/frenzy_overlay.svg" alt="">
+                <img src="./assets/scene/frenzy_overlay.svg" alt="">
                 <div class="frenzy-copy">
                   <span>FRENZY</span>
                   <b>入神</b>
@@ -186,13 +186,13 @@
                 <div class="anvil-sword" id="anvil-sword">
                   <img id="anvil-sword-art" src="" alt="">
                 </div>
-                <img class="anvil-art" src="/assets/scene/anvil-pixel.png" alt="铁砧">
-                <img class="hammer-art" id="hammer-art" src="/assets/ui/hammer-forge.svg" alt="锤子">
+                <img class="anvil-art" src="./assets/scene/anvil-pixel.png" alt="铁砧">
+                <img class="hammer-art" id="hammer-art" src="./assets/ui/hammer-forge.svg" alt="锤子">
                 <span class="forge-flash" id="forge-flash" aria-hidden="true"></span>
               </div>
               <div class="spark-layer" id="spark-layer"></div>
               <div class="stage-empty" id="stage-empty">
-                <div class="empty-glyph"><img src="/assets/ui/anvil.svg" alt=""></div>
+                <div class="empty-glyph"><img src="./assets/ui/anvil.svg" alt=""></div>
                 <strong>铁砧还空着</strong>
                 <span>从库存把一把剑拖到这里，或点击剑卡片上的「上砧」</span>
               </div>
@@ -214,7 +214,7 @@
                   <div class="value-block"><span>当前剑值</span><b id="stat-value">— G</b><em id="stat-value-note"></em></div>
                 </div>
                 <div class="charge-block" id="charge-block">
-                  <div class="charge-label"><span><img src="/assets/ui/charge.svg" alt="">入神充能</span><b id="charge-count">0 / 10</b></div>
+                  <div class="charge-label"><span><img src="./assets/ui/charge.svg" alt="">入神充能</span><b id="charge-count">0 / 10</b></div>
                   <div class="charge-pips" id="charge-pips"></div>
                 </div>
                 <div class="layer-chips" id="layer-chips"></div>
@@ -237,7 +237,7 @@
                   <button class="btn btn-ghost btn-small" data-action="rewind" id="btn-rewind" title="R">回溯</button>
                 </div>
                 <button class="btn btn-hammer" data-action="hammer" id="btn-hammer">
-                  <span class="hammer-icon"><img src="/assets/ui/hammer-forge.svg" alt=""></span>
+                  <span class="hammer-icon"><img src="./assets/ui/hammer-forge.svg" alt=""></span>
                   <span class="hammer-label"><b>挥锤</b><small>SPACE</small></span>
                   <span class="cooldown-sweep" id="cooldown-sweep"></span>
                 </button>
@@ -252,8 +252,8 @@
 
           <aside class="right-panel" id="right-panel">
             <div class="right-tabs">
-              <button class="right-tab active" data-action="tab-right" data-tab="shop"><img src="/assets/ui/swordcoin.svg" alt="">遗物商亭</button>
-              <button class="right-tab" data-action="tab-right" data-tab="relics"><img src="/assets/ui/star.svg" alt="">持有遗物</button>
+              <button class="right-tab active" data-action="tab-right" data-tab="shop"><img src="./assets/ui/swordcoin.svg" alt="">遗物商亭</button>
+              <button class="right-tab" data-action="tab-right" data-tab="relics"><img src="./assets/ui/star.svg" alt="">持有遗物</button>
             </div>
             <div id="right-content" class="right-content panel-cut"></div>
           </aside>
@@ -273,7 +273,7 @@
           <div class="tribute-action">
             <div class="tribute-total"><span id="tribute-diff">还差 1,800 G</span><b id="tribute-total">0 G</b></div>
             <button class="btn btn-bell" data-action="ring-bell" id="btn-bell">
-              <img src="/assets/scene/bell.svg" alt="">
+              <img src="./assets/scene/bell.svg" alt="">
               <span><b>敲响贡铃</b><small>结束今天</small></span>
             </button>
           </div>
@@ -288,10 +288,10 @@
           <button class="btn btn-primary btn-small mab-hammer" data-action="hammer" id="mab-hammer">挥锤</button>
         </div>
         <nav class="mobile-dock" id="mobile-dock">
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="forge"><img src="/assets/ui/anvil.svg" alt=""><span>铁砧</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="inventory"><img src="/assets/ui/sword.svg" alt=""><span>库存</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="shop"><img src="/assets/ui/swordcoin.svg" alt=""><span>商亭</span></button>
-          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="tribute"><img src="/assets/ui/tribute.svg" alt=""><span>贡台</span><em id="dock-tribute-count">0</em></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="forge"><img src="./assets/ui/anvil.svg" alt=""><span>铁砧</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="inventory"><img src="./assets/ui/sword.svg" alt=""><span>库存</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="shop"><img src="./assets/ui/swordcoin.svg" alt=""><span>商亭</span></button>
+          <button class="mobile-dock-btn" data-action="mobile-tab" data-tab="tribute"><img src="./assets/ui/tribute.svg" alt=""><span>贡台</span><em id="dock-tribute-count">0</em></button>
         </nav>
       </div>
       <div id="tutorial-layer" class="tutorial-layer hidden"></div>
@@ -304,6 +304,6 @@
   <canvas id="fx-canvas"></canvas>
   <div id="drag-ghost" class="drag-ghost hidden"></div>
 
-  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@ import {
   CONSUMABLES, FAMILY_ORDER, fmt, compact, esc, tip, relicTip, relicIcon, consumableIcon,
   achievementIcon, swordArtPath, rarityOf, mergedCodex, achievementMap, phaseLabel, consumeDisabledReason,
 } from './helpers.js';
-import { TRIBUTE_DAYS, dayInfo } from '/shared/data/gameData.js';
+import { TRIBUTE_DAYS, dayInfo } from '../shared/data/gameData.js';
 
 const $ = sel => document.querySelector(sel);
 
@@ -161,7 +161,7 @@ function merchantItemArt(item) {
     const fake = { family: item.family, merchant: true, historyMaxLevel: item.level, remnant: false, route: SWORD_FAMILIES[item.family].route };
     return swordArtPath(fake);
   }
-  return '/assets/swords/citadel_s0.svg';
+  return './assets/swords/citadel_s0.svg';
 }
 
 function buildMerchant(app) {
@@ -184,7 +184,7 @@ function buildMerchant(app) {
         <div class="mi-stock">库存 ${item.stock}${item.sub === 'base' ? ' · 追加单价递增' : ''}</div>
       </div>
       <div class="mi-buy">
-        <div class="mi-price"><img src="/assets/ui/gold.svg" alt="">${fmt(item.price)}</div>
+        <div class="mi-price"><img src="./assets/ui/gold.svg" alt="">${fmt(item.price)}</div>
         <button class="btn ${canAfford && !sold ? 'btn-primary' : 'btn-ghost'} btn-small" data-action="buy-merchant" data-index="${i}" ${sold || !canAfford ? 'disabled' : ''} title="${sold ? '售罄' : canAfford ? '购买' : '金币不足'}">${sold ? '售罄' : '购买'}</button>
       </div>
     </div>`;
@@ -197,13 +197,13 @@ function buildMerchant(app) {
     size: 'wide',
     body: `<div class="merchant-layout">
       <div class="merchant-portrait">
-        <img src="/assets/scene/merchant.svg" alt="">
+        <img src="./assets/scene/merchant.svg" alt="">
         <div class="ghost-name">流浪的供货人</div>
         <div class="ghost-sub">“买吧。你还会再来的。”</div>
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span class="merchant-gold"><img src="/assets/ui/gold.svg" alt="">你的金币 ${fmt(s.gold)} G</span>
+          <span class="merchant-gold"><img src="./assets/ui/gold.svg" alt="">你的金币 ${fmt(s.gold)} G</span>
           ${allSold ? '<span class="chip gold">已买空本次库存</span>' : `<span style="font-size:9px;color:var(--muted-2)">买空全部库存可解锁成就</span>`}
         </div>
         <div class="merchant-items">${items}</div>
@@ -246,7 +246,7 @@ function codexSwords(app, codex) {
     const max = maxByFamily[fam] ?? -1;
     const stages = f.stages.map((name, idx) => {
       const found = idx <= max;
-      return `<img class="${found ? 'discovered' : ''}" src="/assets/swords/${fam}_s${idx}.svg" alt="${esc(found ? name : '未发现')}">`;
+      return `<img class="${found ? 'discovered' : ''}" src="./assets/swords/${fam}_s${idx}.svg" alt="${esc(found ? name : '未发现')}">`;
     }).join('');
     const names = f.stages.map((name, idx) => `<span class="${idx <= max ? 'discovered' : ''}">${idx <= max ? esc(name) : '???'}</span>`).join('');
     const ach = ACHIEVEMENTS.find(a => a.family === fam);
@@ -286,8 +286,8 @@ function codexRelics(app, codex) {
 function codexMerchant(app, codex) {
   const seen = codex.merchant || {};
   const entries = [
-    { key: 'base-sword', name: '基础剑', desc: '幽灵商人出售的普通剑，随机路线与隐藏分支。', icon: '/assets/swords/citadel_s0.svg', sword: true },
-    { key: 'special-sword', name: '商人专属剑', desc: '世界树、海产、殡葬三条剑系之一，基础价值 640 G。', icon: '/assets/swords/world_tree_s0.svg', sword: true },
+    { key: 'base-sword', name: '基础剑', desc: '幽灵商人出售的普通剑，随机路线与隐藏分支。', icon: './assets/swords/citadel_s0.svg', sword: true },
+    { key: 'special-sword', name: '商人专属剑', desc: '世界树、海产、殡葬三条剑系之一，基础价值 640 G。', icon: './assets/swords/world_tree_s0.svg', sword: true },
     ...Object.entries(CONSUMABLES).map(([key, c]) => ({ key, name: c.zh, desc: c.desc, icon: consumableIcon(key) })),
   ];
   const cards = entries.map(e => {
@@ -497,7 +497,7 @@ function buildVictory(app, summary) {
     size: 'medium',
     closable: false,
     body: `<div class="end-screen">
-      <img class="end-art" src="/assets/scene/dragon_calm.svg" alt="">
+      <img class="end-art" src="./assets/scene/dragon_calm.svg" alt="">
       <div class="end-stamp">THE CONTRACT IS PAID</div>
       <h2 class="end-title victory">巨龙收下了账本。</h2>
       <div class="end-sub">工坊还在。你还在。21 天，一把又一把剑。</div>
@@ -533,7 +533,7 @@ function buildDeath(app, summary) {
     size: 'medium',
     closable: false,
     body: `<div class="end-screen">
-      <img class="end-art" src="/assets/scene/dragon_rage.svg" alt="">
+      <img class="end-art" src="./assets/scene/dragon_rage.svg" alt="">
       <div class="end-stamp">THE FORGE IS CLOSED</div>
       <h2 class="end-title dead">巨龙收走了工坊。</h2>
       <div class="end-sub">${summary.pardonUsed ? '赦免状燃尽了，但这次没有第二条。' : '铁砧还在，铁匠不在了。'}</div>

@@ -1,15 +1,14 @@
-import { API_PORT } from '/runtime-config.js';
-
-const DEFAULT_API = `${location.protocol}//${location.hostname || '127.0.0.1'}:${API_PORT}/api`;
+const DEFAULT_API = new URL('../api', import.meta.url).href;
+const API_STORAGE_KEY = `forgetax.api:${DEFAULT_API}`;
 
 function detectBase() {
   const fromQuery = new URLSearchParams(location.search).get('api');
   if (fromQuery) {
     const cleaned = fromQuery.replace(/\/+$/, '');
-    localStorage.setItem('forgetax.api', cleaned);
+    localStorage.setItem(API_STORAGE_KEY, cleaned);
     return cleaned;
   }
-  return localStorage.getItem('forgetax.api') || DEFAULT_API;
+  return localStorage.getItem(API_STORAGE_KEY) || DEFAULT_API;
 }
 
 export const API_BASE = detectBase();

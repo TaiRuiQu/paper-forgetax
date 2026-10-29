@@ -1,0 +1,120 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import http from 'node:http';
+import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = fileURLToPath(new URL('../', import.meta.url));
+
+test('browser API uses its deployment path and isolates saved overrides', () => {
+  const source = fs.readFileSync(new URL('../client/js/api.js', import.meta.url), 'utf8');
+  const saved = new Map([['forgetax.api', 'http://old-host:3001/api']]);
+  function detect(base, search = '') {
+    const context = {
+      URL, URLSearchParams, location: { search },
+      localStorage: { getItem: key => saved.get(key), setItem: (key, value) => saved.set(key, value) },
+    };
+    vm.runInNewContext(source.replaceAll('import.meta.url', JSON.stringify(`${base}js/api.js`))
+      .replace(/^export /gm, '') + '\nglobalThis.result = API_BASE;', context);
+    return context.result;
+  }
+  assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
+  assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://games.paperagent.work/forgetax/api');
+  assert.equal(detect('https://games.paperagent.work/forgetax/', '?api=https://api.example.com/api/'), 'https://api.example.com/api');
+  assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://api.example.com/api');
+  assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
+});
+
+async function launch(script, env) {
+  const child = spawn(process.execPath, [script], {
+    cwd: ROOT, env: { ...process.env, HOST: '127.0.0.1', ...env },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      let output = '';
+      const timer = setTimeout(() => reject(new Error(output || 'Startup timeout')), 10000);
+      child.stdout.on('data', chunk => {
+        output += chunk;
+        const match = output.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (match) { clearTimeout(timer); resolve(Number(match[1])); }
+      });
+      child.stderr.on('data', chunk => { output += chunk; });
+      child.on('error', error => { clearTimeout(timer); reject(error); });
+      child.on('exit', code => { clearTimeout(timer); reject(new Error(`Exited ${code}: ${output}`)); });
+    });
+    return { child, port };
+  } catch (error) { child.kill(); throw error; }
+}
+
+async function stop(child) {
+  if (child.exitCode !== null) return;
+  await new Promise(resolve => { child.once('exit', resolve); child.kill(); });
+}
+
+test('root and stripped subpath serve the module graph, assets and API', async t => {
+  const dataDir = fs.mkdtempSync(`${os.tmpdir()}/forgetax-deploy-`);
+  let api, web, proxy;
+  t.after(async () => {
+    if (proxy) {
+      proxy.closeAllConnections();
+      await new Promise(resolve => proxy.close(resolve));
+    }
+    if (web) await stop(web.child);
+    if (api) await stop(api.child);
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  });
+  api = await launch('server/src/index.js', { PORT: '0', FORGETAX_DATA_DIR: dataDir });
+  web = await launch('server/static.js', { PORT: String(api.port), WEB_PORT: '0' });
+
+  // Model Caddy handle_path: remove the prefix before proxying all methods.
+  proxy = http.createServer((req, res) => {
+    if (!req.url.startsWith('/forgetax/')) { res.writeHead(404); res.end(); return; }
+    const upstream = http.request({ hostname: '127.0.0.1', port: web.port,
+      path: req.url.slice('/forgetax'.length), method: req.method, headers: req.headers,
+    }, response => { res.writeHead(response.statusCode, response.headers); response.pipe(res); });
+    upstream.on('error', () => { res.writeHead(502); res.end(); });
+    req.pipe(upstream);
+  });
+  await new Promise(resolve => proxy.listen(0, '127.0.0.1', resolve));
+
+  for (const base of [`http://127.0.0.1:${web.port}/`, `http://127.0.0.1:${proxy.address().port}/forgetax/`]) {
+    const seen = new Set();
+    async function visit(url) {
+      if (seen.has(url)) return;
+      seen.add(url);
+      assert.ok(url.startsWith(base), `Escaped deployment path: ${url}`);
+      const response = await fetch(url);
+      assert.equal(response.status, 200, url);
+      const type = response.headers.get('content-type');
+      if (!/text\/html|javascript|text\/css/.test(type)) return;
+      const source = await response.text();
+      const refs = type.includes('html')
+        ? [...source.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1])
+        : type.includes('javascript')
+          ? [...source.matchAll(/(?:from\s+|import\s*)['"]([^'"]+)['"]/g)].map(m => m[1])
+          : [...source.matchAll(/url\(['"]?([^'"\)]+)['"]?\)/g)].map(m => m[1]);
+      for (const ref of refs) await visit(new URL(ref, url).href);
+    }
+    await visit(base);
+    assert.ok(seen.size > 30, 'Crawled HTML, CSS, modules, fonts and images');
+    assert.equal((await (await fetch(`${base}api/health`)).json()).ok, true);
+    const username = base.includes('/forgetax/') ? 'prefixuser' : 'rootuser';
+    const registered = await fetch(`${base}api/register`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: 'deploy-test-password' }),
+    });
+    assert.equal(registered.status, 201);
+    const { token } = await registered.json();
+    const me = await fetch(`${base}api/me`, { headers: { Authorization: `Bearer ${token}` } });
+    assert.equal(me.status, 200);
+    const login = await fetch(`${base}api/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: 'deploy-test-password' }),
+    });
+    assert.equal(login.status, 200);
+  }
+});

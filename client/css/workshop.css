@@ -4,7 +4,7 @@
 button:focus-visible, [tabindex]:focus-visible { outline: 2px solid #ffdc92; outline-offset: 4px; }
 input { caret-color: #ffdc92; }
 #screen-game { position: fixed; inset: 0; height: 100dvh; min-height: 0; overflow: hidden; }
-.game-bg { position: absolute; inset: 0; background: #16120e url('/assets/scene/workshop-pixel.webp') center / cover no-repeat; image-rendering: pixelated; }
+.game-bg { position: absolute; inset: 0; background: #16120e url('../assets/scene/workshop-pixel.webp') center / cover no-repeat; image-rendering: pixelated; }
 .game-bg > img { display: none; }
 .game-bg-tint { background: linear-gradient(180deg, #08090ac7, transparent 27%, transparent 58%, #080807b5); }
 .game-bg::after { content: ''; position: absolute; left: 0; top: 25%; width: 34%; height: 60%; background: radial-gradient(ellipse at 22% 47%, #e763122e, transparent 68%); animation: room-fire 4s steps(5) infinite; pointer-events: none; }
@@ -156,7 +156,7 @@ input { caret-color: #ffdc92; }
 .guide-target { outline: 2px solid #ffdc92; outline-offset: 5px; animation: guide-beacon 1.6s steps(2) infinite; }
 .guide-target::after { pointer-events: none; }
 .toast-root { top: 88px; right: 22px; }
-.intro-frame { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; clip-path: none; display: flex; flex-direction: column; justify-content: center; padding: clamp(24px,6vw,88px); background: linear-gradient(90deg,#080a09f2 15%,#080a09d4 45%,#080a0922 85%), url('/assets/scene/workshop-pixel.webp') center/cover; box-shadow: none; }
+.intro-frame { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; clip-path: none; display: flex; flex-direction: column; justify-content: center; padding: clamp(24px,6vw,88px); background: linear-gradient(90deg,#080a09f2 15%,#080a09d4 45%,#080a0922 85%), url('../assets/scene/workshop-pixel.webp') center/cover; box-shadow: none; }
 .intro-frame .modal-head, .intro-frame .modal-body, .intro-frame .modal-foot { width: min(580px,100%); padding: 0; background: none; border: 0; overflow: visible; }
 .intro-frame .modal-body { flex: 0 0 auto; }
 .intro-frame .modal-title { font-size: clamp(25px,3vw,42px); color: #ffdc92; line-height: 1.5; }
@@ -276,7 +276,7 @@ input { caret-color: #ffdc92; }
   .guide-on .anvil-sword img { width: 220px; height: 90px; }
   .guide-on .hammer-art { bottom: 110px; width: 75px; }
   .toast-root { top: auto; bottom: 120px; left: 16px; right: 16px; pointer-events: none; }
-  .intro-frame { padding: 26px; background-position: 42% center; background-image: linear-gradient(90deg,#080a09f5,#080a09b0),url('/assets/scene/workshop-pixel.webp'); }
+  .intro-frame { padding: 26px; background-position: 42% center; background-image: linear-gradient(90deg,#080a09f5,#080a09b0),url('../assets/scene/workshop-pixel.webp'); }
   .intro-story { font-size: 15px; margin: 18px 0; }
   .intro-story p { margin-bottom: 12px; }
   .intro-frame .modal-foot .btn { width: 100%; min-height: 48px; }

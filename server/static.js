@@ -10,6 +10,7 @@ const CLIENT = path.join(ROOT, 'client');
 const SHARED = path.join(ROOT, 'shared');
 const PORT = Number(process.env.WEB_PORT || 5173);
 const HOST = process.env.HOST || '127.0.0.1';
+const API_HOST = HOST === '0.0.0.0' ? '127.0.0.1' : HOST === '::' ? '::1' : HOST;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -37,17 +38,34 @@ function resolveSafe(base, urlPath) {
 }
 
 const server = http.createServer((req, res) => {
-  if (!['GET', 'HEAD'].includes(req.method)) {
-    res.writeHead(405); res.end('Method Not Allowed'); return;
-  }
   let urlPath;
   try { urlPath = new URL(req.url, 'http://localhost').pathname; } catch { res.writeHead(400); res.end('Bad Request'); return; }
 
-  if (urlPath === '/runtime-config.js') {
-    const body = `export const API_PORT = ${JSON.stringify(Number(process.env.PORT || 3001))};\n`;
-    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
-    res.end(req.method === 'HEAD' ? undefined : body);
+  if (urlPath === '/api' || urlPath.startsWith('/api/')) {
+    const upstream = http.request({
+      hostname: API_HOST,
+      port: Number(process.env.PORT || 3001),
+      method: req.method,
+      path: req.url,
+      headers: req.headers,
+    }, response => {
+      res.writeHead(response.statusCode, response.headers);
+      response.on('error', () => res.destroy());
+      response.pipe(res);
+    });
+    upstream.on('error', () => {
+      if (res.headersSent) { res.destroy(); return; }
+      res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ error: 'api-unavailable' }));
+    });
+    req.on('error', () => upstream.destroy());
+    res.on('close', () => upstream.destroy());
+    req.pipe(upstream);
     return;
+  }
+
+  if (!['GET', 'HEAD'].includes(req.method)) {
+    res.writeHead(405); res.end('Method Not Allowed'); return;
   }
 
   let base = CLIENT;

@@ -4,12 +4,12 @@ import { FX } from './fx.js';
 import { swingForgeHammer, finishForgeStrike } from './forge.js';
 import * as UI from './ui.js';
 import * as Modals from './modals.js';
-import { tutorialObjective } from '/shared/engine/tutorial.js';
+import { tutorialObjective } from '../shared/engine/tutorial.js';
 import {
   E, TUTORIAL_STEPS, fmt, compact, esc, mergedCodex,
 } from './helpers.js';
-import { RELIC_BY_ID } from '/shared/data/relics.js';
-import { ACHIEVEMENTS, CONSUMABLES, ACHIEVEMENT_BY_ID } from '/shared/data/gameData.js';
+import { RELIC_BY_ID } from '../shared/data/relics.js';
+import { ACHIEVEMENTS, CONSUMABLES, ACHIEVEMENT_BY_ID } from '../shared/data/gameData.js';
 import { hammerDisabledReason, consumeDisabledReason, bestSword } from './helpers.js';
 
 const CONSUMABLE_ORDER = ['cracked_dragon_scale', 'regret_clockwork', 'red_chalk', 'powder_pouch', 'cold_star_shard'];

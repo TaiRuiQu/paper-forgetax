@@ -3,14 +3,14 @@
    ============================================================ */
 @font-face {
   font-family: 'Press Start 2P';
-  src: url('/assets/fonts/press-start-2p.woff2') format('woff2');
+  src: url('../assets/fonts/press-start-2p.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Fusion Pixel';
-  src: url('/assets/fonts/fusion-pixel-12px-latin.woff2') format('woff2');
+  src: url('../assets/fonts/fusion-pixel-12px-latin.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -18,7 +18,7 @@
 }
 @font-face {
   font-family: 'Fusion Pixel';
-  src: url('/assets/fonts/fusion-pixel-12px-zh_hans.woff2') format('woff2');
+  src: url('../assets/fonts/fusion-pixel-12px-zh_hans.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -1151,7 +1151,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
     position: absolute; inset: 0 0 170px 0; pointer-events: none;
     background:
       radial-gradient(ellipse at 50% 48%, rgba(255,140,60,.08), transparent 55%),
-      url('/assets/scene/tribute.svg') center 48% / min(260px, 70vw) no-repeat;
+      url('../assets/scene/tribute.svg') center 48% / min(260px, 70vw) no-repeat;
     opacity: .5;
   }
   #screen-game.mobile-tab-tribute .tribute-bar { position: relative; }
