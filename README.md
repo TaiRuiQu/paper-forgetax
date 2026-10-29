@@ -12,9 +12,9 @@
 
 ---
 
-![1793274637781.png](https://picui.ogmua.cn/s1/2026/10/29/6ae3331630769.webp)
+![锻剑工坊](docs/images/screenshot-01.webp)
 
-![1793274610995.png](https://picui.ogmua.cn/s1/2026/10/29/6ae333166dd21.webp)    
+![完整工坊界面](docs/images/screenshot-02.webp)
 
 一款按 `docs/reference/forgetax.md` 研究和复刻的 **2D 像素风 ForgeTax**。固定视角工坊、点击/拖拽操作、实时入神窗口、21 天契约、94 件遗物、9 条剑系、幽灵商人、图鉴、成就与无尽模式。
 
