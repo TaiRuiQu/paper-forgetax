@@ -6,6 +6,7 @@ import os from 'node:os';
 import http from 'node:http';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { assetVersion } from '../server/asset-version.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 
@@ -22,10 +23,32 @@ test('browser API uses its deployment path and isolates saved overrides', () => 
     return context.result;
   }
   assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
+  assert.equal(detect('https://games.paperagent.work/_v/0123456789abcdef/'), 'https://games.paperagent.work/api');
+  assert.equal(detect('https://games.paperagent.work/forgetax/_v/0123456789abcdef/'), 'https://games.paperagent.work/forgetax/api');
   assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://games.paperagent.work/forgetax/api');
   assert.equal(detect('https://games.paperagent.work/forgetax/', '?api=https://api.example.com/api/'), 'https://api.example.com/api');
   assert.equal(detect('https://games.paperagent.work/forgetax/'), 'https://api.example.com/api');
+  assert.equal(detect('https://games.paperagent.work/forgetax/_v/fedcba9876543210/'), 'https://api.example.com/api');
   assert.equal(detect('https://games.paperagent.work/'), 'https://games.paperagent.work/api');
+});
+
+test('resource versions change with content, additions and removals, not timestamps', t => {
+  const root = fs.mkdtempSync(`${os.tmpdir()}/forgetax-assets-`);
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = `${root}/style.css`;
+  fs.writeFileSync(file, 'body { color: red; }');
+  const original = assetVersion([root]);
+  assert.match(original, /^[a-f0-9]{16}$/);
+  fs.utimesSync(file, new Date(0), new Date(0));
+  assert.equal(assetVersion([root]), original);
+  fs.writeFileSync(file, 'body { color: tan; }');
+  assert.notEqual(assetVersion([root]), original);
+  fs.writeFileSync(file, 'body { color: red; }');
+  assert.equal(assetVersion([root]), original);
+  fs.writeFileSync(`${root}/image.svg`, '<svg/>');
+  assert.notEqual(assetVersion([root]), original);
+  fs.unlinkSync(`${root}/image.svg`);
+  assert.equal(assetVersion([root]), original);
 });
 
 async function launch(script, env) {
@@ -76,7 +99,10 @@ test('root and stripped subpath serve the module graph, assets and API', async t
     const upstream = http.request({ hostname: '127.0.0.1', port: web.port,
       path: req.url.slice('/forgetax'.length), method: req.method, headers: req.headers,
     }, response => { res.writeHead(response.statusCode, response.headers); response.pipe(res); });
-    upstream.on('error', () => { res.writeHead(502); res.end(); });
+    upstream.on('error', () => {
+      if (res.headersSent) { res.destroy(); return; }
+      res.writeHead(502); res.end();
+    });
     req.pipe(upstream);
   });
   await new Promise(resolve => proxy.listen(0, '127.0.0.1', resolve));
@@ -92,15 +118,23 @@ test('root and stripped subpath serve the module graph, assets and API', async t
       const type = response.headers.get('content-type');
       if (!/text\/html|javascript|text\/css/.test(type)) return;
       const source = await response.text();
+      const documentBase = type.includes('html')
+        ? new URL(source.match(/<base href="([^"]+)"/)[1], url).href
+        : url;
+      if (type.includes('html')) {
+        assert.equal(response.headers.get('cache-control'), 'no-store');
+        assert.match(documentBase, /\/_v\/[a-f0-9]{16}\/$/);
+      }
       const refs = type.includes('html')
-        ? [...source.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1])
+        ? [...source.replace(/<base[^>]+>/, '').matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1])
         : type.includes('javascript')
           ? [...source.matchAll(/(?:from\s+|import\s*)['"]([^'"]+)['"]/g)].map(m => m[1])
           : [...source.matchAll(/url\(['"]?([^'"\)]+)['"]?\)/g)].map(m => m[1]);
-      for (const ref of refs) await visit(new URL(ref, url).href);
+      for (const ref of refs) await visit(new URL(ref, documentBase).href);
     }
     await visit(base);
     assert.ok(seen.size > 30, 'Crawled HTML, CSS, modules, fonts and images');
+    assert.ok([...seen].filter(url => url !== base).every(url => /\/_v\/[a-f0-9]{16}\//.test(url)), 'Every resource in the graph carries a version');
     assert.equal((await (await fetch(`${base}api/health`)).json()).ok, true);
     const username = base.includes('/forgetax/') ? 'prefixuser' : 'rootuser';
     const registered = await fetch(`${base}api/register`, {

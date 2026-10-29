@@ -177,6 +177,9 @@ export function renderCenter(app) {
   $('#stage-empty').classList.toggle('hidden', !empty);
   const swordEl = $('#anvil-sword');
   swordEl.style.opacity = sw ? '1' : '0';
+  swordEl.draggable = Boolean(sw);
+  if (sw) swordEl.dataset.swordId = sw.id;
+  else delete swordEl.dataset.swordId;
   const strikePhase = $('#forge-rig')?.dataset.strikePhase;
   $('#hammer-art').style.opacity = sw || (strikePhase && strikePhase !== 'idle') ? '1' : '0';
   stage.classList.toggle('is-hot', Boolean(sw && (sw.heat || E.hasRelic(s, 'lifetime-contract'))));

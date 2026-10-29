@@ -51,7 +51,7 @@ input { caret-color: #ffdc92; }
 .sword-context { border-top-color: #70513266; padding: 7px 0 0; min-height: 29px; }
 .center-panel { position: absolute; inset: 0; display: block; overflow: visible; padding: 0; pointer-events: none; }
 .center-panel > * { pointer-events: auto; }
-.anvil-stage { position: absolute; left: 20%; right: 23%; top: 0; bottom: 246px; min-height: 180px; overflow: visible; }
+.anvil-stage { position: absolute; left: 20%; right: 23%; top: 0; bottom: 300px; min-height: 180px; overflow: visible; }
 .stage-bg-art, .stage-tint { display: none; }
 .anvil-art { width: clamp(280px,28vw,430px); bottom: 0; filter: drop-shadow(0 18px 16px #0009); }
 .anvil-sword { bottom: clamp(138px,14.8vw,226px); transform: translateX(-50%) rotate(-6deg); }
@@ -60,6 +60,8 @@ input { caret-color: #ffdc92; }
 .forge-rig { position: absolute; left: 50%; bottom: 0; width: clamp(280px,28vw,430px); aspect-ratio: 3 / 2; transform: translateX(-50%); isolation: isolate; pointer-events: none; }
 .forge-rig .anvil-art { inset: 0; width: 100%; height: 100%; transform: none; object-fit: contain; }
 .forge-rig .anvil-sword { left: 50%; top: -17%; bottom: auto; width: 94%; height: 50%; transform: translateX(-50%) rotate(-6deg); }
+.forge-rig .anvil-sword[draggable="true"] { pointer-events: auto; cursor: grab; }
+.forge-rig .anvil-sword.dragging { cursor: grabbing; }
 .forge-rig .anvil-sword img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .forge-rig .hammer-art { left: 69%; top: -41%; bottom: auto; right: auto; width: 32%; height: auto; aspect-ratio: 1; transform: rotate(-26deg); transform-origin: 50% 88%; z-index: 6; transition: none; filter: drop-shadow(3px 7px 4px #0009); }
 .forge-rig .sword-glow { left: 50%; top: -8%; bottom: auto; width: 90%; height: 30%; }
@@ -79,7 +81,8 @@ input { caret-color: #ffdc92; }
 .frenzy-layer { overflow: hidden; }
 .frenzy-copy { top: 110px; }
 .frenzy-ready { bottom: 0; right: auto; left: 50%; transform: translateX(-50%); white-space: nowrap; }
-.stat-prob-grid { position: absolute; bottom: 115px; left: 24%; right: 26%; grid-template-columns: minmax(180px,.85fr) minmax(210px,1fr); gap: 22px; align-items: end; }
+/* Leave room for all three rows of hammer controls below the sword actions. */
+.stat-prob-grid { position: absolute; bottom: 150px; left: 24%; right: 26%; grid-template-columns: minmax(180px,.85fr) minmax(210px,1fr); gap: 22px; align-items: end; }
 .stat-prob-grid .panel-title { display: none; }
 .sword-stats, .prob-panel { text-shadow: 0 2px 4px #000; }
 .stat-main { padding: 0 0 4px; gap: 10px; }
@@ -187,7 +190,6 @@ input { caret-color: #ffdc92; }
   .left-panel .forge-card { top: 22%; }
   .left-panel .rack-block { bottom: 248px; }
   .left-panel .inventory-block { max-height: 230px; }
-  .anvil-stage { bottom: 245px; }
   .anvil-art { width: 290px; }
   .forge-rig { width: 290px; }
   .anvil-sword { bottom: 144px; }
@@ -195,7 +197,6 @@ input { caret-color: #ffdc92; }
   .hammer-art { width: 85px; bottom: 120px; }
   .stage-swordname { top: 5px; }
   .stage-chips { top: 65px; }
-  .stat-prob-grid { bottom: 100px; }
   .tutorial-card { top: 80px; padding: 10px 14px; }
   .tutorial-card h4 { font-size: 17px; }
   .tutorial-card p { font-size: 12px; }

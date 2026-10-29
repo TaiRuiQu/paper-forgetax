@@ -1014,17 +1014,19 @@ function wireDragDrop() {
     if (img) { try { e.dataTransfer.setDragImage(img, 60, 24); } catch { /* ignore */ } }
   });
   document.addEventListener('dragend', e => {
-    e.target.closest?.('[data-sword-id]')?.classList.remove('dragging');
+    document.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
     document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
   });
-  document.addEventListener('dragover', e => {
+  const acceptDrop = e => {
     const zone = e.target.closest('[data-drop]');
     if (!zone) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     document.querySelectorAll('[data-drop].drag-over').forEach(x => { if (x !== zone) x.classList.remove('drag-over'); });
     zone.classList.add('drag-over');
-  });
+  };
+  document.addEventListener('dragenter', acceptDrop);
+  document.addEventListener('dragover', acceptDrop);
   document.addEventListener('dragleave', e => {
     const zone = e.target.closest('[data-drop]');
     if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
@@ -1038,6 +1040,7 @@ function wireDragDrop() {
     const id = e.dataTransfer.getData('text/plain');
     if (!id || !E.getSword(app.state, id)) return;
     const target = zone.dataset.drop;
+    if (E.getSword(app.state, id).location === target) return;
     if (target === 'anvil') doPlaceOnAnvil(id);
     else if (target === 'tribute') doMove(id, 'tribute');
     else if (target === 'rack') doMove(id, 'rack');

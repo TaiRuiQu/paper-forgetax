@@ -3,6 +3,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assetVersion } from './asset-version.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -40,6 +41,11 @@ function resolveSafe(base, urlPath) {
 const server = http.createServer((req, res) => {
   let urlPath;
   try { urlPath = new URL(req.url, 'http://localhost').pathname; } catch { res.writeHead(400); res.end('Bad Request'); return; }
+
+  // The versioned directory keeps relative module imports, CSS URLs and dynamic
+  // image paths in the same version, including deployments below a subpath.
+  const versioned = /^\/_v\/[a-f0-9]{16}\//.test(urlPath);
+  if (versioned) urlPath = urlPath.replace(/^\/_v\/[a-f0-9]{16}/, '');
 
   if (urlPath === '/api' || urlPath.startsWith('/api/')) {
     const upstream = http.request({
@@ -80,7 +86,7 @@ const server = http.createServer((req, res) => {
 
   fs.stat(target, (err, stat) => {
     if (!err && stat.isFile()) {
-      serveFile(target, req, res);
+      serveFile(target, req, res, versioned);
       return;
     }
     if (urlPath.startsWith('/shared/') || path.extname(urlPath)) {
@@ -88,15 +94,22 @@ const server = http.createServer((req, res) => {
       res.end('Not Found');
       return;
     }
-    serveFile(path.join(CLIENT, 'index.html'), req, res);
+    serveFile(path.join(CLIENT, 'index.html'), req, res, versioned);
   });
 });
 
-function serveFile(file, req, res) {
+function serveFile(file, req, res, versioned = false) {
   const ext = path.extname(file).toLowerCase();
   const type = MIME[ext] || 'application/octet-stream';
   fs.readFile(file, (err, data) => {
     if (err) { res.writeHead(404); res.end('Not Found'); return; }
+    if (ext === '.html') {
+      // Recompute on page loads so local edits also invalidate cached assets
+      // without restarting the static server.
+      const version = assetVersion([CLIENT, SHARED]);
+      const prefix = versioned ? '../../' : './';
+      data = Buffer.from(data.toString('utf8').replace('<head>', `<head>\n  <base href="${prefix}_v/${version}/">`));
+    }
     res.writeHead(200, {
       'Content-Type': type,
       'Content-Length': data.length,

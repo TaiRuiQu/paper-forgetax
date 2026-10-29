@@ -1,4 +1,7 @@
-const DEFAULT_API = new URL('../api', import.meta.url).href;
+const apiUrl = new URL('../api', import.meta.url);
+// Asset versions must not change the API endpoint or saved API override key.
+apiUrl.pathname = apiUrl.pathname.replace(/\/_v\/[a-f0-9]{16}\//, '/');
+const DEFAULT_API = apiUrl.href;
 const API_STORAGE_KEY = `forgetax.api:${DEFAULT_API}`;
 
 function detectBase() {
