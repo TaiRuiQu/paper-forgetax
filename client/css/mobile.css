@@ -7,6 +7,11 @@
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 button, a, input, [data-action], [data-sword-id] { touch-action: manipulation; }
+/* A sword must stay ours while a finger is on it: if the browser starts a
+   native pan under a held finger, later touch moves stop being cancelable and
+   a sword could not be picked up (see touch.js). Vertical swipes scroll the
+   list from script instead. */
+[data-sword-id] { touch-action: none; }
 img { -webkit-touch-callout: none; }
 [data-hammer-button] { touch-action: none; }
 [data-hammer-button].pressed { transform: translateY(2px); filter: brightness(1.14); }

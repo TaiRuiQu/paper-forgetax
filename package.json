@@ -12,7 +12,7 @@
     "server": "node server/src/index.js",
     "web": "node server/static.js",
     "dev": "node scripts/dev.mjs",
-    "test": "node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js tests/rate-limit.test.js tests/deployment.test.js tests/save-sync.test.js tests/save-file.test.js",
+    "test": "node --test tests/engine.test.js tests/content.test.js tests/rules-extra.test.js tests/tutorial.test.js tests/forge-feedback.test.js tests/api.test.js tests/rate-limit.test.js tests/deployment.test.js tests/save-sync.test.js tests/save-file.test.js tests/wire.test.js",
     "test:engine": "node --test tests/engine.test.js",
     "test:api": "node --test tests/api.test.js tests/rate-limit.test.js",
     "assets": "node scripts/generate-swords.mjs && node scripts/generate-scene.mjs && node scripts/generate-relic-icons.mjs",

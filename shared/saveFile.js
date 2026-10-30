@@ -65,7 +65,9 @@ function validate(data) {
 export function serializeSaveFile(state, profile) {
   const data = { format: FORMAT, version: 1, exportedAt: new Date().toISOString(), state, profile };
   validate(data);
-  const text = JSON.stringify(data, null, 2);
+  // Machine format: no indentation and no pretty-printing. It is read back by
+  // the game, not by people, so the whitespace would only cost bytes.
+  const text = JSON.stringify(data);
   if (new TextEncoder().encode(text).length > MAX_SAVE_FILE_BYTES) throw new Error('存档超过 5 MB，无法导出。');
   return text;
 }

@@ -12,26 +12,41 @@ import {
 import { mergeProfile, emptyProfile } from '../../shared/engine/engine.js';
 import { dayInfo } from '../../shared/data/gameData.js';
 import { applySavePatch } from '../../shared/savePatch.js';
+import { decodeMessage, encodeMessage, PROTOBUF_TYPE } from '../../shared/wire.js';
 import { clientIp, createAuthRateLimiter } from './rate-limit.js';
 
 const PORT = Number(process.env.PORT || 3001);
 const HOST = process.env.HOST || '127.0.0.1';
 const MAX_BODY = 6 * 1024 * 1024;
+// Experimental: serve protobuf responses when a client asks (Accept header).
+// Requests may always be protobuf; set FORGETAX_PROTOBUF=0 to answer JSON only.
+const USE_PROTOBUF = process.env.FORGETAX_PROTOBUF !== '0';
 const limitAuth = createAuthRateLimiter();
 
-function json(res, status, data) {
-  const body = JSON.stringify(data);
+// JSON, or the smaller of JSON and protobuf for the same document. Requests
+// may use either; a response is protobuf only when the client accepted it, so
+// a JSON-only client is never handed bytes it cannot read.
+function json(res, status, data, wantsProtobuf = responseProtobuf) {
+  const { bytes, type } = wantsProtobuf
+    ? encodeMessage(data, { protobuf: USE_PROTOBUF })
+    : { bytes: new TextEncoder().encode(JSON.stringify(data)), type: 'application/json' };
   res.writeHead(status, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(body),
+    'Content-Type': type === PROTOBUF_TYPE ? PROTOBUF_TYPE : 'application/json; charset=utf-8',
+    'Content-Length': bytes.length,
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff',
   });
-  res.end(body);
+  res.end(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength));
 }
+
+const acceptsProtobuf = req => USE_PROTOBUF && /application\/x-protobuf/.test(req.headers.accept || '');
+
+// Set per request so every json() call answers in the client's format without
+// threading the flag through each handler.
+let responseProtobuf = false;
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -48,8 +63,9 @@ function readJson(req) {
     });
     req.on('end', () => {
       if (!chunks.length) { resolve({}); return; }
+      const body = Buffer.concat(chunks);
       try {
-        resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+        resolve(decodeMessage(body, req.headers['content-type'] || ''));
       } catch {
         reject(Object.assign(new Error('invalid-json'), { status: 400 }));
       }
@@ -104,7 +120,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
       'Access-Control-Max-Age': '86400',
     });
@@ -112,6 +128,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   let url;
+  responseProtobuf = acceptsProtobuf(req);
   try { url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); } catch { json(res, 400, { error: 'bad-request' }); return; }
   const pathname = url.pathname.replace(/\/+$/, '') || '/';
 

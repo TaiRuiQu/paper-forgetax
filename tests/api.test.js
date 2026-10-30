@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { diffSave } from '../shared/savePatch.js';
+import { encodeMessage, decodeMessage, PROTOBUF_TYPE } from '../shared/wire.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.resolve(__dirname, '../server/src/index.js');
@@ -356,4 +357,63 @@ test('incremental saves persist only changed fields and reject stale or invalid 
   assert.equal(oldPatch.status, 409);
   const options = await request(server.base, '/saves/1', { method: 'OPTIONS' });
   assert.match(options.headers.get('access-control-allow-methods'), /PATCH/);
+});
+
+test('experimental protobuf transport: requests and responses, with JSON still the default', async () => {
+  const reg = await request(server.base, '/register', { method: 'POST', body: { username: 'ProtoSmith', password: 'forge123' } });
+  const token = reg.data.token;
+  const state = {
+    version: 2, phase: 'playing', day: 6, quotaBase: 4000, gold: 1234, coins: 2, anger: 0,
+    swords: Array.from({ length: 9 }, (_, i) => ({ id: `sw${i}`, level: i, historyMaxLevel: i, family: 'citadel', location: 'floor' })),
+    relics: ['bent-nail'], log: Array.from({ length: 20 }, (_, i) => ({ day: 6, text: `记录 ${i}`, type: 'forge', at: 1 })),
+  };
+  const body = { state, profile: { codex: { relics: { 'bent-nail': true } } } };
+
+  // A protobuf PUT body is accepted like JSON.
+  const encoded = encodeMessage(body);
+  assert.equal(encoded.type, PROTOBUF_TYPE, 'a repeat-heavy save should fit in protobuf');
+  const put = await fetch(`${server.base}/saves/2`, {
+    method: 'PUT',
+    headers: { 'Content-Type': encoded.type, Authorization: `Bearer ${token}` },
+    body: encoded.bytes,
+  });
+  assert.equal(put.status, 200);
+  const putData = await put.json();
+  assert.equal(putData.meta.day, 6);
+
+  // JSON clients keep getting JSON, byte for byte as before.
+  const plain = await request(server.base, '/saves/2', { token });
+  assert.equal(plain.status, 200);
+  assert.equal(plain.data.save.state.swords.length, 9);
+
+  // A client that asks for protobuf gets protobuf and can decode it.
+  const binary = await fetch(`${server.base}/saves/2`, {
+    headers: { Accept: PROTOBUF_TYPE, Authorization: `Bearer ${token}` },
+  });
+  assert.match(binary.headers.get('content-type'), /application\/x-protobuf/);
+  const decoded = decodeMessage(new Uint8Array(await binary.arrayBuffer()), binary.headers.get('content-type'));
+  assert.deepEqual(decoded.save.state, plain.data.save.state);
+  assert.equal(decoded.save.revision, plain.data.save.revision);
+
+  // A protobuf PATCH applies exactly like the JSON one.
+  const patchBody = { baseRevision: decoded.save.revision, changes: [{ path: ['gold'], value: 99 }] };
+  const patchEncoded = encodeMessage(patchBody);
+  const patched = await fetch(`${server.base}/saves/2`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': patchEncoded.type, Accept: PROTOBUF_TYPE, Authorization: `Bearer ${token}` },
+    body: patchEncoded.bytes,
+  });
+  assert.equal(patched.status, 200);
+  const patchedData = decodeMessage(new Uint8Array(await patched.arrayBuffer()), patched.headers.get('content-type'));
+  assert.equal(patchedData.ok, true);
+  const after = await request(server.base, '/saves/2', { token });
+  assert.equal(after.data.save.state.gold, 99);
+
+  // Garbage in either format is still rejected.
+  const junk = await fetch(`${server.base}/saves/2`, {
+    method: 'PUT',
+    headers: { 'Content-Type': PROTOBUF_TYPE, Authorization: `Bearer ${token}` },
+    body: Uint8Array.from([0xff, 0xff, 0xff]),
+  });
+  assert.equal(junk.status, 400);
 });

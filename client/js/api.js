@@ -1,4 +1,5 @@
 import { SaveSync } from '../shared/saveSync.js';
+import { encodeMessage, decodeMessage } from '../shared/wire.js';
 
 const apiUrl = new URL('../api', import.meta.url);
 // Asset versions must not change the API endpoint or saved API override key.
@@ -48,7 +49,18 @@ export function setCachedUser(user) {
 async function request(path, { method = 'GET', body, auth = true, timeout = 15000 } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {
+    'Content-Type': 'application/json',
+    // Experimental protobuf transport (shared/wire.js); a JSON-only server
+    // ignores this and answers JSON.
+    Accept: 'application/json, application/x-protobuf',
+  };
+  let payload;
+  if (body !== undefined) {
+    const encoded = encodeMessage(body);
+    headers['Content-Type'] = encoded.type;
+    payload = encoded.bytes;
+  }
   if (auth) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -58,7 +70,7 @@ async function request(path, { method = 'GET', body, auth = true, timeout = 1500
     res = await fetch(`${API_BASE}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: payload,
       signal: controller.signal,
     });
   } catch (err) {
@@ -67,7 +79,10 @@ async function request(path, { method = 'GET', body, auth = true, timeout = 1500
   }
   clearTimeout(timer);
   let data = null;
-  try { data = await res.json(); } catch { data = null; }
+  try {
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    data = decodeMessage(bytes, res.headers.get('content-type') || '');
+  } catch { data = null; }
   if (!res.ok) {
     if (res.status === 401 && auth) {
       setToken('');
